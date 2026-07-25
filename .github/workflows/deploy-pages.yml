@@ -18,8 +18,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
-      PUBLIC_GITHUB_REPO: ${{ vars.PUBLIC_GITHUB_REPO }}
+      PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL || 'https://yantz06.github.io' }}
+      PUBLIC_GITHUB_REPO: ${{ vars.PUBLIC_GITHUB_REPO || 'YanTZ06/weekly---repory' }}
       PUBLIC_GISCUS_REPO: ${{ vars.PUBLIC_GISCUS_REPO }}
       PUBLIC_GISCUS_REPO_ID: ${{ vars.PUBLIC_GISCUS_REPO_ID }}
       PUBLIC_GISCUS_CATEGORY: ${{ vars.PUBLIC_GISCUS_CATEGORY }}
