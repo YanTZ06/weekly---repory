@@ -147,24 +147,40 @@ const activeProjects = projects.filter((project) => project.showOnMap).slice(0, 
   let dragStartX = 0;
   let dragStartScroll = 0;
   let dragging = false;
+  let activePointerId: number | null = null;
   let previousRegion = 0;
 
   viewport?.addEventListener("pointerdown", (event) => {
+    if (!event.isPrimary || event.button !== 0) return;
+    const target = event.target;
+    if (target instanceof Element && target.closest("a, button, input, select, textarea, dialog")) return;
+
     dragStartX = event.clientX;
     dragStartScroll = viewport.scrollLeft;
     previousRegion = viewport.scrollLeft;
-    dragging = true;
-    viewport.setPointerCapture(event.pointerId);
+    activePointerId = event.pointerId;
+    dragging = false;
   });
 
   viewport?.addEventListener("pointermove", (event) => {
-    if (!dragging) return;
+    if (activePointerId !== event.pointerId) return;
     const distance = event.clientX - dragStartX;
-    if (Math.abs(distance) > 4) viewport.dataset.dragging = "true";
+    if (!dragging && Math.abs(distance) <= 6) return;
+
+    if (!dragging) {
+      dragging = true;
+      viewport.dataset.dragging = "true";
+      viewport.setPointerCapture(event.pointerId);
+    }
+
+    event.preventDefault();
     viewport.scrollLeft = dragStartScroll - distance;
   });
 
-  const stopDragging = () => {
+  const stopDragging = (event: PointerEvent) => {
+    if (activePointerId !== event.pointerId) return;
+    if (viewport?.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
+    activePointerId = null;
     dragging = false;
     window.setTimeout(() => delete viewport?.dataset.dragging, 0);
   };
@@ -199,12 +215,6 @@ const activeProjects = projects.filter((project) => project.showOnMap).slice(0, 
     link.addEventListener("click", (event) => {
       if (viewport?.dataset.dragging === "true") {
         event.preventDefault();
-        return;
-      }
-      if (window.matchMedia("(max-width: 900px)").matches && !link.classList.contains("is-selected")) {
-        event.preventDefault();
-        document.querySelectorAll(".map-building.is-selected").forEach((item) => item.classList.remove("is-selected"));
-        link.classList.add("is-selected");
       }
     });
   });
