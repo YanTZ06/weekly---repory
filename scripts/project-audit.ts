@@ -72,6 +72,7 @@ const REQUIRED_FILES = [
   ".github/workflows/process-assets-issue.yml",
   ".github/workflows/validate-content.yml",
   ".github/workflows/deploy-pages.yml",
+  ".github/ISSUE_TEMPLATE/add-tag.yml",
   "README.md",
   "ATTRIBUTIONS.md",
   "LICENSE"
@@ -120,7 +121,7 @@ export async function auditProject(root = process.cwd()): Promise<void> {
 
   const issueForms = (await readdir(path.join(root, ".github", "ISSUE_TEMPLATE")))
     .filter((name) => name.endsWith(".yml") && name !== "config.yml");
-  assert.equal(issueForms.length, 7, "应包含 7 个 Issue Form 和 1 个 config.yml");
+  assert.equal(issueForms.length, 8, "应包含 8 个 Issue Form 和 1 个 config.yml");
   for (const name of [...issueForms, "config.yml"]) {
     parseYaml(await readFile(path.join(root, ".github", "ISSUE_TEMPLATE", name), "utf8"));
   }
@@ -135,6 +136,12 @@ export async function auditProject(root = process.cwd()): Promise<void> {
     assert.ok(source.includes("OWNER_LOGIN"), `${name} 必须校验 OWNER_LOGIN`);
     assert.ok(source.includes("steps.process.outputs.skip"), `${name} 必须跳过未授权写操作`);
     assert.ok(source.indexOf("git push") < source.indexOf("finalize-issue.ts"), `${name} 必须在推送后关闭 Issue`);
+    assert.ok(source.includes("actions: write"), `${name} 必须具有触发部署工作流的权限`);
+    assert.ok(source.includes("gh workflow run deploy-pages.yml"), `${name} 必须在内容更新后触发 Pages 部署`);
+    assert.ok(
+      source.indexOf("git push") < source.indexOf("gh workflow run deploy-pages.yml"),
+      `${name} 必须在推送内容后触发 Pages 部署`
+    );
   }
 
   const packageJson = JSON.parse(await readFile(path.join(root, "package.json"), "utf8")) as {

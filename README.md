@@ -156,6 +156,7 @@ report:status
 asset:emoji
 asset:calendar-icon
 asset:project
+asset:tag
 profile:update
 processed
 processing-failed
@@ -186,14 +187,19 @@ PUBLIC_GISCUS_CATEGORY_ID
 
 ```text
 验证作者 → 解析字段 → 校验输入 → 处理图片 → 写入临时工作区
-→ 内容/测试校验 → 单次 Git 提交 → 回复 Issue → 关闭 Issue
+→ 内容/测试校验 → 单次 Git 提交 → 触发 Pages 部署 → 回复 Issue → 关闭 Issue
 ```
 
 失败时不会提交；Issue 保持打开并添加 `processing-failed`。
+管理工作流使用 `workflow_dispatch` 主动触发 Pages 部署，因为由 `GITHUB_TOKEN` 推送的提交本身不会再次触发普通 `push` 工作流。
 
 ### 新增事项
 
 选择“新增周报事项”，填写日期、分类、纯文本内容、项目、标签、表情、记录球和最多 9 张图片。文件 ID 与文件名由脚本生成，Issue 内容不能控制路径。
+
+### 新增标签
+
+选择“新增标签”，填写标签名称、URL 标识和 `#RRGGBB` 颜色。图标可以复用 `mechanical`、`scroll`、`star`、`mountain`，也可以上传新图片；上传图片会被自动转换为 24×24 透明 PNG。创建成功后，在新增或修改周报事项时填写完全一致的标签名称即可。
 
 ### 修改事项
 

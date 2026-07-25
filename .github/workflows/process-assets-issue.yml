@@ -9,6 +9,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
+  actions: write
   contents: write
   issues: write
 
@@ -18,9 +19,11 @@ jobs:
       contains(github.event.issue.labels.*.name, 'asset:emoji') ||
       contains(github.event.issue.labels.*.name, 'asset:calendar-icon') ||
       contains(github.event.issue.labels.*.name, 'asset:project') ||
+      contains(github.event.issue.labels.*.name, 'asset:tag') ||
       startsWith(github.event.issue.title, '[表情管理]') ||
       startsWith(github.event.issue.title, '[记录球管理]') ||
-      startsWith(github.event.issue.title, '[项目灵兽管理]')
+      startsWith(github.event.issue.title, '[项目灵兽管理]') ||
+      startsWith(github.event.issue.title, '[标签管理]')
     runs-on: ubuntu-latest
     env:
       OWNER_LOGIN: ${{ vars.OWNER_LOGIN }}
@@ -40,7 +43,11 @@ jobs:
       - id: process
         run: pnpm exec tsx scripts/process-assets-issue.ts
       - if: steps.process.outputs.skip != 'true'
+        run: pnpm run test
+      - if: steps.process.outputs.skip != 'true'
         run: pnpm run check
+      - if: steps.process.outputs.skip != 'true'
+        run: pnpm run validate:content
       - if: steps.process.outputs.skip != 'true'
         run: pnpm run validate:dimensions
       - if: steps.process.outputs.skip != 'true'
@@ -53,8 +60,14 @@ jobs:
           git add src/data public/assets
           git diff --cached --quiet || git commit -m "assets: process issue #${{ github.event.issue.number }}"
           git push
+      - name: Trigger Pages deployment
+        if: steps.process.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy-pages.yml --ref main
       - name: Confirm success and close issue
         if: steps.process.outputs.skip != 'true'
         env:
-          PROCESS_KIND: assets
+          PROCESS_KIND: ${{ steps.process.outputs.process_kind }}
+          PROCESS_RESULT: ${{ steps.process.outputs.result_id }}
         run: pnpm exec tsx scripts/finalize-issue.ts

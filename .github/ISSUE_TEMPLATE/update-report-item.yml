@@ -38,7 +38,7 @@ body:
     id: tags
     attributes:
       label: 新标签
-      description: 多个值用逗号或换行分隔；留空保持原值。
+      description: 多个值用逗号或换行分隔；新名称请先通过管理页创建标签，留空保持原值。
   - type: input
     id: emoji
     attributes:

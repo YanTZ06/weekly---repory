@@ -1,0 +1,58 @@
+name: 新增标签
+description: 创建可用于周报事项的新标签和像素徽章
+title: "[标签管理] "
+labels: ["asset:tag"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        标签创建成功后会出现在百宝阁中。名称用于周报表单，URL 标识用于标签详情页地址。
+  - type: input
+    id: name
+    attributes:
+      label: 标签名称
+      description: 最多 40 个字符，必须与周报中填写的标签名称完全一致。
+      placeholder: 前端开发
+    validations:
+      required: true
+  - type: input
+    id: slug
+    attributes:
+      label: 标签 slug
+      description: 仅使用小写英文字母、数字和连字符，最多 64 个字符。
+      placeholder: frontend
+    validations:
+      required: true
+  - type: input
+    id: color
+    attributes:
+      label: 标签颜色
+      description: 使用六位十六进制颜色。
+      placeholder: "#4F88C6"
+    validations:
+      required: true
+  - type: dropdown
+    id: icon
+    attributes:
+      label: 标签图标
+      description: 可复用现有图标；选择“上传新图标”时还需在下一项上传图片。
+      options:
+        - mechanical
+        - scroll
+        - star
+        - mountain
+        - 上传新图标
+    validations:
+      required: true
+  - type: textarea
+    id: image
+    attributes:
+      label: 新图标图片
+      description: 仅在上方选择“上传新图标”时填写。拖入 PNG、WebP 或 GIF，系统会转为 24×24 透明 PNG。
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: 提交确认
+      options:
+        - label: 我确认标签名称和 URL 标识没有与现有标签重复。
+          required: true

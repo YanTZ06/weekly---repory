@@ -9,6 +9,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
+  actions: write
   contents: write
   issues: write
 
@@ -51,6 +52,11 @@ jobs:
           git add src/content public/assets/reports
           git diff --cached --quiet || git commit -m "content: process report issue #${{ github.event.issue.number }}"
           git push
+      - name: Trigger Pages deployment
+        if: steps.process.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy-pages.yml --ref main
       - name: Confirm success and close issue
         if: steps.process.outputs.skip != 'true'
         env:

@@ -23,6 +23,14 @@ const itemSchema = z.object({
   updatedAt: z.iso.datetime({ offset: true })
 });
 
+const tagSchema = z.object({
+  name: z.string().trim().min(1).max(40),
+  slug: z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/),
+  icon: z.string().regex(/^\/assets\/tag-icons\/[a-z0-9][a-z0-9-]{0,67}\.png$/),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+  createdAt: z.iso.datetime({ offset: true })
+});
+
 async function walk(directory: string): Promise<string[]> {
   const entries = await readdir(directory, { withFileTypes: true });
   const nested = await Promise.all(entries.map((entry) => {
@@ -40,6 +48,19 @@ export async function validateContent(root = process.cwd()): Promise<void> {
       .filter((icon) => icon.enabled)
       .map((icon) => icon.id)
   );
+  const tags = z.array(tagSchema).parse(
+    JSON.parse(await readFile(path.join(root, "src", "data", "tags.json"), "utf8"))
+  );
+  const tagNames = new Set<string>();
+  const tagSlugs = new Set<string>();
+  for (const tag of tags) {
+    const normalizedName = tag.name.toLocaleLowerCase("zh-CN");
+    const normalizedSlug = tag.slug.toLowerCase();
+    if (tagNames.has(normalizedName)) throw new Error(`标签名称重复：${tag.name}`);
+    if (tagSlugs.has(normalizedSlug)) throw new Error(`标签 slug 重复：${tag.slug}`);
+    tagNames.add(normalizedName);
+    tagSlugs.add(normalizedSlug);
+  }
   const ids = new Set<string>();
   for (const file of files) {
     const parsed = matter(await readFile(file, "utf8"));
@@ -51,6 +72,11 @@ export async function validateContent(root = process.cwd()): Promise<void> {
       throw new Error(`${file} 的 ISO 周字段与日期不一致`);
     }
     if (!iconIds.has(item.calendarIcon)) throw new Error(`${file} 使用了不存在或已停用的记录球`);
+    for (const tagName of item.tags) {
+      if (!tags.some((tag) => tag.name === tagName)) {
+        throw new Error(`${file} 使用了不存在的标签：${tagName}`);
+      }
+    }
     if (!parsed.content.trim()) throw new Error(`${file} 的正文为空`);
     if (/^\s{0,3}(?:#{1,6}\s|```|>|[-*+]\s|\d+\.\s)/m.test(parsed.content) || /<\/?[a-z][^>]*>/i.test(parsed.content)) {
       throw new Error(`${file} 的正文包含 Markdown 或 HTML`);

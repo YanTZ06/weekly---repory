@@ -2,12 +2,13 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import PixelWindow from "@/components/common/PixelWindow.astro";
 
-const repo = import.meta.env.PUBLIC_GITHUB_REPO ?? "your-name/weekly-report";
+const repo = import.meta.env.PUBLIC_GITHUB_REPO ?? "YanTZ06/weekly---repory";
 const issueBase = `https://github.com/${repo}/issues/new`;
 const entries = [
   { title: "新增周报事项", template: "add-report-item.yml", icon: "✎" },
   { title: "修改已有事项", template: "update-report-item.yml", icon: "↻" },
   { title: "隐藏、删除或恢复", template: "change-report-status.yml", icon: "♲" },
+  { title: "新增标签", template: "add-tag.yml", icon: "#" },
   { title: "管理项目灵兽", template: "manage-project-creature.yml", icon: "✦" },
   { title: "管理记录球", template: "manage-calendar-icon.yml", icon: "●" },
   { title: "管理自定义表情", template: "manage-emoji.yml", icon: "☺" },

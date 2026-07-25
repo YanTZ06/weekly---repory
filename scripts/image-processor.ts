@@ -18,7 +18,7 @@ export interface ProcessedImage {
 }
 
 export interface ManagedAssetOptions {
-  kind: "emoji" | "calendar-icon";
+  kind: "emoji" | "calendar-icon" | "tag-icon";
 }
 
 async function download(urlValue: string): Promise<{ buffer: Buffer; extension: string }> {
@@ -122,7 +122,7 @@ export async function downloadManagedAsset(
       kernel: sharp.kernel.nearest,
       background: { r: 0, g: 0, b: 0, alpha: 0 }
     });
-  if (options.kind === "calendar-icon") {
+  if (options.kind === "calendar-icon" || options.kind === "tag-icon") {
     await pipeline.png({ palette: true, compressionLevel: 9 }).toFile(output);
   } else {
     await pipeline.webp({ lossless: true, effort: 5 }).toFile(output);
