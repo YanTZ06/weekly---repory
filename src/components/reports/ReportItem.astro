@@ -21,6 +21,19 @@ const tags = tagsData as Tag[];
     <time datetime={item.date}>{item.date}</time>
     <span class="report-item-ball"><CalendarIconDisplay id={item.calendarIcon} size={32} /></span>
   </header>
+  <div class="report-item-id">
+    <span class="report-item-id-label">事项 ID</span>
+    <code>{item.id}</code>
+    <button
+      class="copy-item-id"
+      type="button"
+      data-copy-item-id={item.id}
+      aria-label={`复制事项 ID ${item.id}`}
+    >
+      <span aria-hidden="true">▣</span>
+      <span data-copy-label aria-live="polite">复制</span>
+    </button>
+  </div>
   <p class="report-item-body">{item.body}</p>
   {(item.projects.length > 0 || item.tags.length > 0) && (
     <footer class="report-item-footer">
@@ -65,6 +78,71 @@ const tags = tagsData as Tag[];
     margin-left: auto;
   }
 
+  .report-item-id {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.55rem;
+    margin-top: 0.75rem;
+    padding: 0.5rem 0.6rem;
+    border: 2px solid color-mix(in srgb, var(--wood) 35%, transparent);
+    background: color-mix(in srgb, var(--wall) 62%, var(--white));
+  }
+
+  .report-item-id-label {
+    flex: 0 0 auto;
+    color: var(--muted);
+    font-size: 0.76rem;
+    font-weight: 850;
+    letter-spacing: 0.06em;
+  }
+
+  .report-item-id code {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--ink);
+    font: 800 0.8rem/1.4 ui-monospace, "Cascadia Code", monospace;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: all;
+  }
+
+  .copy-item-id {
+    display: inline-flex;
+    flex: 0 0 auto;
+    min-height: 32px;
+    align-items: center;
+    gap: 0.32rem;
+    margin-left: auto;
+    padding: 0.3rem 0.55rem;
+    border: 2px solid var(--tile);
+    color: var(--ink);
+    background: var(--yellow);
+    box-shadow: 2px 2px 0 var(--tile);
+    font-size: 0.76rem;
+    font-weight: 850;
+    cursor: pointer;
+  }
+
+  .copy-item-id:hover {
+    filter: brightness(1.04);
+  }
+
+  .copy-item-id:active {
+    translate: 1px 1px;
+    box-shadow: 1px 1px 0 var(--tile);
+  }
+
+  .copy-item-id.is-copied {
+    color: #fff;
+    background: var(--grass);
+  }
+
+  .copy-item-id.is-error {
+    color: #fff;
+    background: var(--red);
+  }
+
   .report-item-body {
     margin: 1rem 0;
     font-size: 1rem;
@@ -75,4 +153,68 @@ const tags = tagsData as Tag[];
   .report-item-footer {
     margin-top: 1rem;
   }
+
+  @media (max-width: 480px) {
+    .report-item {
+      padding: 0.8rem;
+    }
+
+    .report-item-id {
+      flex-wrap: wrap;
+    }
+
+    .report-item-id code {
+      flex: 1 1 12rem;
+    }
+  }
 </style>
+
+<script>
+  async function copyItemId(itemId: string) {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(itemId);
+      return;
+    }
+
+    const textArea = document.createElement("textarea");
+    textArea.value = itemId;
+    textArea.setAttribute("readonly", "");
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    document.body.append(textArea);
+    textArea.select();
+    const copied = document.execCommand("copy");
+    textArea.remove();
+
+    if (!copied) {
+      throw new Error("Clipboard copy failed");
+    }
+  }
+
+  document.querySelectorAll<HTMLButtonElement>("[data-copy-item-id]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const itemId = button.dataset.copyItemId;
+      const label = button.querySelector<HTMLElement>("[data-copy-label]");
+
+      if (!itemId || !label) return;
+
+      button.disabled = true;
+      button.classList.remove("is-copied", "is-error");
+
+      try {
+        await copyItemId(itemId);
+        label.textContent = "已复制";
+        button.classList.add("is-copied");
+      } catch {
+        label.textContent = "请手动复制";
+        button.classList.add("is-error");
+      } finally {
+        window.setTimeout(() => {
+          label.textContent = "复制";
+          button.classList.remove("is-copied", "is-error");
+          button.disabled = false;
+        }, 1800);
+      }
+    });
+  });
+</script>
