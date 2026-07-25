@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
   readonly PUBLIC_GITHUB_REPO?: string;
+  readonly PUBLIC_MANAGE_API_URL?: string;
   readonly PUBLIC_GISCUS_REPO?: string;
   readonly PUBLIC_GISCUS_REPO_ID?: string;
   readonly PUBLIC_GISCUS_CATEGORY?: string;

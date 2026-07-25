@@ -1,0 +1,671 @@
+---
+import { MANAGEMENT_FORMS } from "@/config/manage-forms";
+
+interface Props {
+  apiUrl?: string;
+}
+
+const { apiUrl = "" } = Astro.props;
+const normalizedApiUrl = apiUrl.replace(/\/+$/, "");
+---
+
+<section
+  class="management-console"
+  data-management-console
+  data-api-url={normalizedApiUrl}
+  aria-label="周报内容管理控制台"
+>
+  <div class="auth-card auth-checking" data-auth-panel="checking" role="status">
+    <span class="status-light is-checking" aria-hidden="true"></span>
+    <div>
+      <strong>正在验证 GitHub 身份</strong>
+      <p>请稍候，正在检查当前浏览器是否已有管理授权。</p>
+    </div>
+  </div>
+
+  <div class="auth-card auth-denied" data-auth-panel="denied" hidden>
+    <span class="status-light is-denied" aria-hidden="true"></span>
+    <div>
+      <strong>你没有权限更改</strong>
+      <p data-auth-message>请先使用 GitHub 验证身份。只有 YanTZ06 可以进入管理控制台。</p>
+      <a class="pixel-action" data-login-link href="#">使用 GitHub 验证身份</a>
+    </div>
+  </div>
+
+  <div class="auth-card auth-unconfigured" data-auth-panel="unconfigured" hidden>
+    <span class="status-light is-warning" aria-hidden="true"></span>
+    <div>
+      <strong>管理后台尚未连接</strong>
+      <p>站点管理员需要先配置 PUBLIC_MANAGE_API_URL，直接编辑功能才会启用。</p>
+    </div>
+  </div>
+
+  <div class="auth-card auth-ready" data-auth-panel="ready" hidden>
+    <span class="status-light is-ready" aria-hidden="true"></span>
+    <div class="auth-owner">
+      <div>
+        <strong>身份验证通过</strong>
+        <p>当前账号：<span class="mono" data-owner-login>@YanTZ06</span>。提交内容通过私密管理请求发送，不会创建公开 Issue。</p>
+      </div>
+      <button class="plain-action" type="button" data-logout>退出管理</button>
+    </div>
+  </div>
+
+  <div class="editor-layout" data-editor hidden>
+    <aside class="operation-panel" aria-label="选择管理操作">
+      <p class="panel-label">选择操作</p>
+      <div class="operation-list">
+        {MANAGEMENT_FORMS.map((definition, index) => (
+          <button
+            class="operation-button"
+            type="button"
+            data-operation={definition.id}
+            aria-pressed={index === 0 ? "true" : "false"}
+          >
+            <span aria-hidden="true">{definition.icon}</span>
+            <span>
+              <strong>{definition.name}</strong>
+              <small>{definition.description}</small>
+            </span>
+          </button>
+        ))}
+      </div>
+    </aside>
+
+    <div class="form-panel">
+      {MANAGEMENT_FORMS.map((definition, index) => (
+        <form
+          class="management-form"
+          data-management-form={definition.id}
+          hidden={index !== 0}
+        >
+          <header class="form-heading">
+            <div>
+              <p class="panel-label">站内直接提交</p>
+              <h2>{definition.name}</h2>
+              <p>{definition.description}</p>
+            </div>
+            <span class="form-icon" aria-hidden="true">{definition.icon}</span>
+          </header>
+
+          <div class="form-fields">
+            {definition.fields.map((field) => (
+              <label class:list={["form-field", field.kind === "textarea" && "is-wide"]}>
+                <span>
+                  {field.label}
+                  {field.required && <em>必填</em>}
+                </span>
+                {field.kind === "select" ? (
+                  <select name={field.id} required={field.required}>
+                    {field.options?.map((option) => <option value={option}>{option}</option>)}
+                  </select>
+                ) : field.kind === "textarea" ? (
+                  <textarea
+                    name={field.id}
+                    required={field.required}
+                    maxlength={field.maxLength}
+                    placeholder={field.placeholder}
+                    rows={field.id.includes("content") ? 7 : 4}
+                  ></textarea>
+                ) : (
+                  <input
+                    name={field.id}
+                    type={field.kind === "date" ? "date" : "text"}
+                    required={field.required}
+                    maxlength={field.maxLength}
+                    placeholder={field.placeholder}
+                    pattern={field.validation === "safe-id"
+                      ? "[a-z0-9][a-z0-9-]{0,63}"
+                      : field.validation === "item-id"
+                        ? "\\d{8}-[a-f0-9]{6}"
+                        : field.validation === "hex-color"
+                          ? "#[0-9A-Fa-f]{6}"
+                          : undefined}
+                  />
+                )}
+                {field.description && <small>{field.description}</small>}
+              </label>
+            ))}
+          </div>
+
+          <label class="confirmation-row">
+            <input type="checkbox" name="confirmation" required />
+            <span>{definition.confirmText}</span>
+          </label>
+
+          <div class="form-actions">
+            <button class="submit-action" type="submit">
+              <span data-submit-label>安全提交</span>
+            </button>
+            <small>请求内容不会出现在公开 Issues；处理结果会直接提交到仓库。</small>
+          </div>
+          <p class="submit-status" data-submit-status aria-live="polite"></p>
+        </form>
+      ))}
+    </div>
+  </div>
+
+  <noscript>
+    <p class="auth-card auth-denied">你没有权限更改：管理控制台需要启用 JavaScript 才能验证 GitHub 身份。</p>
+  </noscript>
+</section>
+
+<style>
+  .management-console {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .auth-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.1rem 1.2rem;
+    border: 4px solid var(--tile);
+    background: var(--white);
+    box-shadow: 6px 6px 0 var(--shadow);
+  }
+
+  .auth-card strong {
+    font-size: 1.05rem;
+  }
+
+  .auth-card p {
+    margin: 0.35rem 0 0;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .status-light {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    margin-top: 0.15rem;
+    border: 3px solid var(--tile);
+    background: var(--stone);
+    box-shadow: 2px 2px 0 var(--tile);
+  }
+
+  .status-light.is-ready { background: var(--grass); }
+  .status-light.is-denied { background: var(--red); }
+  .status-light.is-warning { background: var(--yellow); }
+  .status-light.is-checking { animation: status-blink 0.9s steps(2, end) infinite; }
+
+  .auth-owner {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .pixel-action,
+  .plain-action,
+  .submit-action {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.8rem;
+    padding: 0.65rem 1rem;
+    border: 3px solid var(--tile);
+    color: var(--ink);
+    background: var(--yellow);
+    box-shadow: 4px 4px 0 var(--tile);
+    font-weight: 850;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .plain-action {
+    flex: 0 0 auto;
+    margin: 0;
+    background: var(--wall);
+  }
+
+  .editor-layout {
+    display: grid;
+    grid-template-columns: minmax(230px, 0.34fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 1.2rem;
+  }
+
+  .operation-panel,
+  .form-panel {
+    border: 4px solid var(--tile);
+    background: var(--white);
+    box-shadow: 7px 7px 0 var(--shadow);
+  }
+
+  .operation-panel {
+    position: sticky;
+    top: 88px;
+    padding: 0.8rem;
+  }
+
+  .panel-label {
+    margin: 0;
+    color: var(--red);
+    font: 900 0.75rem/1.3 ui-monospace, "Cascadia Code", monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .operation-list {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .operation-button {
+    display: grid;
+    grid-template-columns: 38px 1fr;
+    align-items: center;
+    gap: 0.7rem;
+    width: 100%;
+    padding: 0.75rem;
+    border: 3px solid transparent;
+    color: var(--ink);
+    background: var(--wall);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .operation-button > span:first-child {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border: 2px solid var(--tile);
+    background: var(--yellow);
+    font-weight: 900;
+  }
+
+  .operation-button strong,
+  .operation-button small {
+    display: block;
+  }
+
+  .operation-button small {
+    margin-top: 0.2rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .operation-button:hover,
+  .operation-button[aria-pressed="true"] {
+    border-color: var(--tile);
+    background: color-mix(in srgb, var(--yellow) 30%, var(--white));
+    box-shadow: 3px 3px 0 var(--tile);
+  }
+
+  .management-form {
+    padding: clamp(1rem, 3vw, 1.6rem);
+  }
+
+  .form-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 3px dashed color-mix(in srgb, var(--tile) 30%, transparent);
+  }
+
+  .form-heading h2 {
+    margin: 0.25rem 0 0;
+  }
+
+  .form-heading p:last-child {
+    margin: 0.4rem 0 0;
+    color: var(--muted);
+  }
+
+  .form-icon {
+    display: grid;
+    width: 54px;
+    height: 54px;
+    place-items: center;
+    border: 3px solid var(--tile);
+    background: var(--yellow);
+    box-shadow: 3px 3px 0 var(--tile);
+    font-size: 1.4rem;
+    font-weight: 900;
+  }
+
+  .form-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.25rem;
+  }
+
+  .form-field {
+    display: grid;
+    align-content: start;
+    gap: 0.4rem;
+    font-weight: 800;
+  }
+
+  .form-field.is-wide {
+    grid-column: 1 / -1;
+  }
+
+  .form-field em {
+    margin-left: 0.35rem;
+    color: var(--red);
+    font-size: 0.7rem;
+    font-style: normal;
+  }
+
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    width: 100%;
+    min-height: 44px;
+    padding: 0.7rem 0.75rem;
+    border: 3px solid color-mix(in srgb, var(--tile) 72%, transparent);
+    border-radius: 0;
+    color: var(--ink);
+    background: var(--paper);
+  }
+
+  .form-field textarea {
+    min-height: 112px;
+    resize: vertical;
+    line-height: 1.65;
+  }
+
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus {
+    border-color: var(--focus);
+    outline: 0;
+    box-shadow: 3px 3px 0 var(--focus);
+  }
+
+  .form-field small {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  .confirmation-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    margin-top: 1.2rem;
+    padding: 0.85rem;
+    border: 2px solid color-mix(in srgb, var(--wood) 45%, transparent);
+    background: var(--wall);
+    line-height: 1.5;
+  }
+
+  .confirmation-row input {
+    width: 20px;
+    height: 20px;
+    margin: 0.1rem 0 0;
+    accent-color: var(--grass);
+  }
+
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.2rem;
+  }
+
+  .submit-action {
+    margin: 0;
+    color: #fff;
+    background: var(--grass);
+  }
+
+  .submit-action:disabled {
+    cursor: wait;
+    filter: grayscale(0.7);
+    opacity: 0.75;
+  }
+
+  .form-actions small {
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 650;
+  }
+
+  .submit-status {
+    min-height: 1.5rem;
+    margin: 0.9rem 0 0;
+    font-weight: 800;
+  }
+
+  .submit-status.is-error { color: var(--red); }
+  .submit-status.is-success { color: var(--grass); }
+
+  .submit-status a {
+    text-decoration-thickness: 2px;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  @keyframes status-blink {
+    50% { background: var(--yellow); }
+  }
+
+  @media (max-width: 860px) {
+    .editor-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .operation-panel {
+      position: static;
+    }
+
+    .operation-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 620px) {
+    .auth-owner,
+    .form-actions {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .operation-list,
+    .form-fields {
+      grid-template-columns: 1fr;
+    }
+
+    .form-field.is-wide {
+      grid-column: auto;
+    }
+
+    .plain-action {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  const SESSION_KEY = "yantz-weekly-management-session";
+
+  function localToday(): string {
+    const now = new Date();
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
+    return local.toISOString().slice(0, 10);
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-management-console]").forEach((consoleRoot) => {
+    const apiUrl = consoleRoot.dataset.apiUrl?.replace(/\/+$/, "") ?? "";
+    const editor = consoleRoot.querySelector<HTMLElement>("[data-editor]");
+    const loginLink = consoleRoot.querySelector<HTMLAnchorElement>("[data-login-link]");
+    const authMessage = consoleRoot.querySelector<HTMLElement>("[data-auth-message]");
+    const ownerLogin = consoleRoot.querySelector<HTMLElement>("[data-owner-login]");
+    const logoutButton = consoleRoot.querySelector<HTMLButtonElement>("[data-logout]");
+    const panels = consoleRoot.querySelectorAll<HTMLElement>("[data-auth-panel]");
+    const operationButtons = consoleRoot.querySelectorAll<HTMLButtonElement>("[data-operation]");
+    const forms = consoleRoot.querySelectorAll<HTMLFormElement>("[data-management-form]");
+
+    function showAuthPanel(name: string): void {
+      panels.forEach((panel) => {
+        panel.hidden = panel.dataset.authPanel !== name;
+      });
+      if (editor) editor.hidden = name !== "ready";
+    }
+
+    function showDenied(message?: string): void {
+      localStorage.removeItem(SESSION_KEY);
+      if (authMessage && message) authMessage.textContent = message;
+      showAuthPanel("denied");
+    }
+
+    function selectOperation(id: string): void {
+      operationButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", button.dataset.operation === id ? "true" : "false");
+      });
+      forms.forEach((form) => {
+        form.hidden = form.dataset.managementForm !== id;
+      });
+    }
+
+    operationButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        if (button.dataset.operation) selectOperation(button.dataset.operation);
+      });
+    });
+
+    forms.forEach((form) => {
+      const dateInput = form.querySelector<HTMLInputElement>('input[type="date"][name="date"]');
+      if (dateInput && !dateInput.value && form.dataset.managementForm === "add-report-item") {
+        dateInput.value = localToday();
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        const session = localStorage.getItem(SESSION_KEY);
+        if (!session) {
+          showDenied("你没有权限更改。请重新验证 GitHub 身份。");
+          return;
+        }
+        const submitButton = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+        const submitLabel = form.querySelector<HTMLElement>("[data-submit-label]");
+        const status = form.querySelector<HTMLElement>("[data-submit-status]");
+        if (!submitButton || !submitLabel || !status) return;
+
+        submitButton.disabled = true;
+        submitLabel.textContent = "正在提交…";
+        status.className = "submit-status";
+        status.textContent = "正在安全发送管理请求。";
+        const fields = Object.fromEntries(new FormData(form).entries());
+        delete fields.confirmation;
+
+        try {
+          const response = await fetch(`${apiUrl}/api/requests`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${session}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              formId: form.dataset.managementForm,
+              fields
+            })
+          });
+          const result = await response.json() as {
+            error?: string;
+            message?: string;
+            requestId?: string;
+            actionsUrl?: string;
+          };
+          if (response.status === 401) {
+            showDenied("你没有权限更改。管理授权已过期，请重新验证 GitHub 身份。");
+            return;
+          }
+          if (!response.ok || !result.requestId || !result.actionsUrl) {
+            throw new Error(result.message || "提交失败，请稍后重试。");
+          }
+          status.classList.add("is-success");
+          status.replaceChildren(
+            document.createTextNode(`请求 ${result.requestId.slice(0, 8)} 已安全提交，后台正在校验和部署。`),
+            document.createTextNode(" "),
+            Object.assign(document.createElement("a"), {
+              href: result.actionsUrl,
+              target: "_blank",
+              rel: "noopener noreferrer",
+              textContent: "查看处理进度 ↗"
+            })
+          );
+          form.reset();
+          if (dateInput && form.dataset.managementForm === "add-report-item") {
+            dateInput.value = localToday();
+          }
+        } catch (error) {
+          status.classList.add("is-error");
+          status.textContent = error instanceof Error ? error.message : "提交失败，请稍后重试。";
+        } finally {
+          submitButton.disabled = false;
+          submitLabel.textContent = "安全提交";
+        }
+      });
+    });
+
+    logoutButton?.addEventListener("click", () => {
+      showDenied("你没有权限更改。已退出本次管理授权。");
+    });
+
+    async function initialize(): Promise<void> {
+      if (!apiUrl) {
+        showAuthPanel("unconfigured");
+        return;
+      }
+      if (loginLink) loginLink.href = `${apiUrl}/auth/login`;
+
+      const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const authResult = hash.get("github-auth");
+      const returnedSession = hash.get("session");
+      const returnedLogin = hash.get("login");
+      if (authResult) {
+        history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+      }
+      if (authResult === "success" && returnedSession) {
+        localStorage.setItem(SESSION_KEY, returnedSession);
+      } else if (authResult === "denied") {
+        showDenied(
+          `你没有权限更改。当前 GitHub 账号 @${returnedLogin || "未知账号"} 不是仓库所有者。`
+        );
+        return;
+      } else if (authResult === "error") {
+        showDenied("你没有权限更改。GitHub 身份验证失败，请重新尝试。");
+        return;
+      }
+
+      const session = localStorage.getItem(SESSION_KEY);
+      if (!session) {
+        showDenied("你没有权限更改。请先使用 GitHub 验证身份。");
+        return;
+      }
+      try {
+        const response = await fetch(`${apiUrl}/api/session`, {
+          headers: { Authorization: `Bearer ${session}` }
+        });
+        const result = await response.json() as { authenticated?: boolean; login?: string };
+        if (!response.ok || !result.authenticated || !result.login) {
+          showDenied("你没有权限更改。管理授权已失效，请重新验证 GitHub 身份。");
+          return;
+        }
+        if (ownerLogin) ownerLogin.textContent = `@${result.login}`;
+        showAuthPanel("ready");
+      } catch {
+        showDenied("你没有权限更改。暂时无法连接管理后台，请稍后重试。");
+      }
+    }
+
+    void initialize();
+  });
+</script>

@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "include": ["src/**/*.ts", "worker-configuration.d.ts", "../src/config/manage-forms.ts"],
+  "exclude": [],
+  "compilerOptions": {
+    "lib": ["ES2022", "WebWorker"],
+    "types": [],
+    "noEmit": true
+  }
+}

@@ -1,0 +1,51 @@
+name: Process private management request
+
+on:
+  repository_dispatch:
+    types: [weekly-management]
+
+concurrency:
+  group: content-management-${{ github.repository }}
+  cancel-in-progress: false
+
+permissions:
+  actions: write
+  contents: write
+
+jobs:
+  process:
+    if: github.actor == vars.OWNER_LOGIN
+    runs-on: ubuntu-latest
+    env:
+      OWNER_LOGIN: ${{ vars.OWNER_LOGIN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply private request
+        id: process
+        run: pnpm exec tsx scripts/process-management-dispatch.ts
+      - run: pnpm run test
+      - run: pnpm run check
+      - run: pnpm run validate:content
+      - run: pnpm run validate:licenses
+      - run: pnpm run validate:dimensions
+      - name: Commit validated change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/content src/data public/assets
+          git diff --cached --quiet || git commit -m "content: apply private management request ${{ steps.process.outputs.request_id }}"
+          git push
+      - name: Trigger Pages deployment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy-pages.yml --ref main

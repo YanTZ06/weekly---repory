@@ -1,0 +1,25 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "yantz-weekly-manage-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "secrets": {
+    "required": [
+      "GITHUB_OAUTH_CLIENT_ID",
+      "GITHUB_OAUTH_CLIENT_SECRET",
+      "GITHUB_DISPATCH_TOKEN",
+      "SESSION_SECRET"
+    ]
+  },
+  "vars": {
+    "ALLOWED_ORIGIN": "https://yantz06.github.io",
+    "GITHUB_REPOSITORY": "YanTZ06/weekly---repory",
+    "OWNER_LOGIN": "YanTZ06",
+    "SITE_MANAGE_URL": "https://yantz06.github.io/weekly---repory/manage/"
+  }
+}

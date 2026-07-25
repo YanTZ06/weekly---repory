@@ -1,0 +1,4 @@
+GITHUB_OAUTH_CLIENT_ID=your_oauth_client_id
+GITHUB_OAUTH_CLIENT_SECRET=your_oauth_client_secret
+GITHUB_DISPATCH_TOKEN=replace_with_fine_grained_contents_token
+SESSION_SECRET=replace_with_at_least_32_random_characters

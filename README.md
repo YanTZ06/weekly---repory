@@ -1,8 +1,8 @@
 # YanTZ的周记
 
-一个完全依靠 GitHub 托管的单用户个人周报系统。首页不是传统博客列表，而是一座可横向探索的明亮像素徽州村落：书院保存周报，告示栏展示日历，灵兽馆整理项目，百宝阁收纳标签，藏书楼提供本地搜索，管理小屋连接 GitHub Issue Forms。
+一个以 GitHub 为内容仓库的单用户个人周报系统。首页不是传统博客列表，而是一座可横向探索的明亮像素徽州村落：书院保存周报，告示栏展示日历，灵兽馆整理项目，百宝阁收纳标签，藏书楼提供本地搜索，管理小屋提供经过 GitHub 身份验证的站内编辑控制台。
 
-> 本项目没有后端、没有数据库、没有云函数。所有数据和图片保存在 GitHub 仓库；评论保存在 GitHub Discussions；管理操作通过 Issue Forms 与 GitHub Actions 完成。
+> 公开页面仍是纯静态站点，没有数据库。一个最小化的 Cloudflare Worker 只负责 GitHub OAuth、所有者白名单校验和发送私密管理请求；内容、图片和历史版本仍保存在 GitHub 仓库，表单正文不会进入公开 Issues。
 
 ## 功能列表
 
@@ -19,7 +19,8 @@
 - Pagefind 浏览器本地全文搜索。
 - giscus 整周评论；未配置时不影响构建。
 - `published`、`hidden`、`deleted` 三种状态和软删除。
-- 八个 GitHub Issue Forms、三个内容处理工作流、验证工作流和 Pages 部署工作流。
+- GitHub OAuth 登录状态、`YanTZ06` 服务端白名单和站内直接管理表单。
+- 八类站内管理表单、一个私密派发工作流、验证工作流和 Pages 部署工作流。
 - Vitest 覆盖日期、聚合、解析、安全和路径等核心逻辑。
 
 ## 世界观与视觉
@@ -37,7 +38,8 @@
 - Vitest
 - Pagefind
 - PhotoSwipe
-- GitHub Pages / Actions / Issue Forms / Discussions / giscus
+- GitHub Pages / Actions / Repository Dispatch / Discussions / giscus
+- Cloudflare Workers / GitHub OAuth
 
 ## 本地开发
 
@@ -65,7 +67,7 @@ npm install
 pnpm run assets:generate
 ```
 
-仓库已提交可直接使用的默认资源，通常不需要执行此命令。它会重绘并覆盖默认头像、灵兽、记录球、标签图标和分享图，仅适合初始化或主动恢复默认视觉；常规构建不会覆盖通过 Issue 管理流程上传的素材。
+仓库已提交可直接使用的默认资源，通常不需要执行此命令。它会重绘并覆盖默认头像、灵兽、记录球、标签图标和分享图，仅适合初始化或主动恢复默认视觉；常规构建不会覆盖通过站内管理流程上传的素材。
 
 默认资源使用真正的原生像素稿，而不是先画低分辨率再做 1.5 倍模糊放大：
 
@@ -121,15 +123,91 @@ pnpm run build
 
 ## GitHub Actions 权限
 
-在 `Settings → Actions → General → Workflow permissions` 中选择 `Read and write permissions`。Issue 处理工作流只声明：
+在 `Settings → Actions → General → Workflow permissions` 中选择 `Read and write permissions`。私密管理工作流只声明：
 
 ```yaml
 permissions:
+  actions: write
   contents: write
-  issues: write
 ```
 
 Pages 工作流只声明读取代码、写入 Pages 和 OIDC 所需权限。
+
+## Cloudflare Worker 管理授权配置
+
+管理页不会读取或保存 GitHub 密码。Worker 完成 OAuth 回调后，只给仓库所有者签发一个两小时有效的短时管理令牌；GitHub OAuth 密钥和仓库派发令牌始终保存在 Cloudflare Secrets 中。
+
+### 1. 首次部署 Worker
+
+```powershell
+pnpm exec wrangler login
+pnpm run worker:deploy
+```
+
+记录命令返回的 Worker 地址，例如：
+
+```text
+https://yantz-weekly-manage-api.<你的 workers.dev 子域>.workers.dev
+```
+
+### 2. 创建 GitHub OAuth App
+
+打开 `GitHub → Settings → Developer settings → OAuth Apps → New OAuth App`：
+
+```text
+Application name: YanTZ Weekly Management
+Homepage URL: https://yantz06.github.io/weekly---repory/
+Authorization callback URL: https://你的-worker地址/auth/callback
+```
+
+创建后保存 `Client ID`，并生成一个 `Client Secret`。
+
+### 3. 创建最小权限派发令牌
+
+创建 Fine-grained personal access token：
+
+- Repository access：只选择 `YanTZ06/weekly---repory`
+- Repository permissions：`Contents → Read and write`
+- 其他权限保持默认最小值
+
+### 4. 写入 Cloudflare Secrets
+
+依次执行并按提示粘贴对应值：
+
+```powershell
+pnpm exec wrangler secret put GITHUB_OAUTH_CLIENT_ID --config worker/wrangler.jsonc
+pnpm exec wrangler secret put GITHUB_OAUTH_CLIENT_SECRET --config worker/wrangler.jsonc
+pnpm exec wrangler secret put GITHUB_DISPATCH_TOKEN --config worker/wrangler.jsonc
+pnpm exec wrangler secret put SESSION_SECRET --config worker/wrangler.jsonc
+```
+
+`SESSION_SECRET` 可使用下面的 PowerShell 命令生成：
+
+```powershell
+[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+```
+
+设置后重新部署：
+
+```powershell
+pnpm run worker:deploy
+```
+
+### 5. 连接 GitHub Pages
+
+在仓库 `Settings → Secrets and variables → Actions → Variables` 中添加：
+
+```text
+PUBLIC_MANAGE_API_URL=https://你的-worker地址
+```
+
+然后手动运行一次 `Deploy GitHub Pages`，或再推送一次提交。管理页第一次使用时需要点击“使用 GitHub 验证身份”；验证成功后的两小时内，同一浏览器会自动恢复短时授权。账号不是 `YanTZ06`、授权过期或没有授权时，页面只显示“你没有权限更改”。
+
+本地联调时，复制 `worker/.dev.vars.example` 为 `worker/.dev.vars` 并填入测试值，然后运行：
+
+```powershell
+pnpm run worker:dev
+```
 
 ## OWNER_LOGIN 配置
 
@@ -139,31 +217,13 @@ Pages 工作流只声明读取代码、写入 Pages 和 OIDC 所需权限。
 OWNER_LOGIN=你的 GitHub 用户名
 ```
 
-所有管理工作流在写入仓库前都会比较：
+私密管理工作流在写入仓库前会同时校验触发账号和请求中的所有者：
 
 ```text
-github.event.issue.user.login == OWNER_LOGIN
+github.actor == OWNER_LOGIN
 ```
 
-非所有者提交会获得 `unauthorized` 标签、收到说明并自动关闭，不会修改仓库。
-
-建议提前创建这些标签：
-
-```text
-report:add
-report:update
-report:status
-asset:emoji
-asset:calendar-icon
-asset:project
-asset:tag
-profile:update
-processed
-processing-failed
-unauthorized
-```
-
-即使业务标签尚未创建，工作流也会根据 Issue 标题前缀识别表单类型。
+非所有者无法从管理页获得短时令牌；即使绕过前端，Worker 与 Actions 的两层所有者校验也会阻止写入。
 
 ## GitHub Discussions 与 giscus
 
@@ -181,17 +241,16 @@ PUBLIC_GISCUS_CATEGORY_ID
 
 未配置时周报详情页显示“驿站正在开门准备中”，构建不会失败。评论者必须登录 GitHub；点赞和其他回应使用 GitHub Discussions 原生能力。
 
-## Issue Forms 使用方法
+## 站内私密管理使用方法
 
-访问站点 `/manage/`，选择操作后会在 GitHub 打开相应表单。Issue Actions 流程为：
+访问站点 `/manage/`，通过 GitHub 身份验证后可以直接填写八类管理表单。Worker 校验请求后通过 GitHub Repository Dispatch 触发工作流，不创建公开 Issue。处理流程为：
 
 ```text
-验证作者 → 解析字段 → 校验输入 → 处理图片 → 写入临时工作区
-→ 内容/测试校验 → 单次 Git 提交 → 触发 Pages 部署 → 回复 Issue → 关闭 Issue
+验证 GitHub 身份 → Worker 所有者白名单 → 私密派发 → Actions 再次校验触发者
+→ 解析字段 → 处理图片 → 内容/测试校验 → 单次 Git 提交 → 触发 Pages 部署
 ```
 
-失败时不会提交；Issue 保持打开并添加 `processing-failed`。
-管理工作流使用 `workflow_dispatch` 主动触发 Pages 部署，因为由 `GITHUB_TOKEN` 推送的提交本身不会再次触发普通 `push` 工作流。
+失败时不会提交，输入内容也不会写入公开日志。管理工作流使用 `workflow_dispatch` 主动触发 Pages 部署，因为由 `GITHUB_TOKEN` 推送的提交本身不会再次触发普通 `push` 工作流。
 
 ### 新增事项
 
@@ -337,10 +396,10 @@ pnpm run preview:static
 ```text
 .
 ├── .github/
-│   ├── ISSUE_TEMPLATE/          # 八个管理表单
-│   └── workflows/               # 处理、验证和部署
+│   ├── ISSUE_TEMPLATE/          # 仅保留评论入口配置
+│   └── workflows/               # 私密管理、验证和部署
 ├── public/assets/               # 原创像素资源与周报图片
-├── scripts/                     # Issue、图片、校验和 GitHub 工具
+├── scripts/                     # 私密管理、图片、校验和 GitHub 工具
 ├── src/
 │   ├── components/
 │   │   ├── calendar/

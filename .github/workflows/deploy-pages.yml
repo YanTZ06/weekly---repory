@@ -20,6 +20,7 @@ jobs:
     env:
       PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL || 'https://yantz06.github.io' }}
       PUBLIC_GITHUB_REPO: ${{ vars.PUBLIC_GITHUB_REPO || 'YanTZ06/weekly---repory' }}
+      PUBLIC_MANAGE_API_URL: ${{ vars.PUBLIC_MANAGE_API_URL }}
       PUBLIC_GISCUS_REPO: ${{ vars.PUBLIC_GISCUS_REPO || 'YanTZ06/weekly---repory' }}
       PUBLIC_GISCUS_REPO_ID: ${{ vars.PUBLIC_GISCUS_REPO_ID || 'R_kgDOTjPEig' }}
       PUBLIC_GISCUS_CATEGORY: ${{ vars.PUBLIC_GISCUS_CATEGORY || 'Announcements' }}

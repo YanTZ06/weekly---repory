@@ -62,12 +62,18 @@ export async function closeIssue(issueNumber: number): Promise<void> {
 }
 
 export async function rejectUnauthorized(issueNumber: number): Promise<void> {
+  if (process.env.MANAGEMENT_DISPATCH === "true") {
+    throw new Error("管理请求未通过所有者校验");
+  }
   await addIssueLabels(issueNumber, ["unauthorized"]);
   await commentOnIssue(issueNumber, "此管理入口只允许仓库所有者使用，未对仓库内容做任何修改。");
   await closeIssue(issueNumber);
 }
 
 export async function reportProcessingFailure(issueNumber: number, error: unknown): Promise<void> {
+  if (process.env.MANAGEMENT_DISPATCH === "true") {
+    throw new Error("私密管理请求处理失败", { cause: error });
+  }
   const message = error instanceof Error ? error.message : String(error);
   await addIssueLabels(issueNumber, ["processing-failed"]);
   await commentOnIssue(issueNumber, `处理失败，仓库内容未提交：\`${message.slice(0, 1000)}\``);
