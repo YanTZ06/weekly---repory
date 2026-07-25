@@ -167,18 +167,18 @@ unauthorized
 ## GitHub Discussions 与 giscus
 
 1. 打开 `Settings → General → Features`，启用 Discussions。
-2. 创建一个用于周报评论的分类。
-3. 在 [giscus.app](https://giscus.app/zh-CN) 选择仓库和分类，映射方式选择 `pathname`。
-4. 在 Pages 构建环境中提供：
+2. 安装 [Giscus GitHub App](https://github.com/apps/giscus)，并授权仓库 `YanTZ06/weekly---repory`。
+3. 使用默认的 `Announcements` 分类，或创建一个用于周报评论的公告类型分类。
+4. 在 [giscus.app](https://giscus.app/zh-CN) 输入 `YanTZ06/weekly---repory`，分类选择上一步的分类，映射方式选择 `pathname`，启用严格匹配、回应和懒加载。
+5. 在 `Settings → Secrets and variables → Actions → Variables` 中提供生成代码里的分类 ID：
 
 ```text
-PUBLIC_GISCUS_REPO
-PUBLIC_GISCUS_REPO_ID
-PUBLIC_GISCUS_CATEGORY
 PUBLIC_GISCUS_CATEGORY_ID
 ```
 
-未配置时周报详情页显示“评论功能尚未配置”，构建不会失败。评论者必须登录 GitHub；点赞和其他回应使用 GitHub Discussions 原生能力。
+仓库名与仓库 ID 已内置，分类默认使用 `Announcements`；使用其他分类时，再增加 `PUBLIC_GISCUS_CATEGORY`。
+
+未配置时周报详情页显示“驿站正在开门准备中”，构建不会失败。评论者必须登录 GitHub；点赞和其他回应使用 GitHub Discussions 原生能力。
 
 ## Issue Forms 使用方法
 

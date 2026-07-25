@@ -1,33 +1,45 @@
 ---
-const repo = import.meta.env.PUBLIC_GISCUS_REPO;
-const repoId = import.meta.env.PUBLIC_GISCUS_REPO_ID;
-const category = import.meta.env.PUBLIC_GISCUS_CATEGORY;
-const categoryId = import.meta.env.PUBLIC_GISCUS_CATEGORY_ID;
-const configured = Boolean(repo && repoId && category && categoryId);
+const repo = import.meta.env.PUBLIC_GISCUS_REPO?.trim() || "YanTZ06/weekly---repory";
+const repoId = import.meta.env.PUBLIC_GISCUS_REPO_ID?.trim() || "R_kgDOTjPEig";
+const category = import.meta.env.PUBLIC_GISCUS_CATEGORY?.trim() || "Announcements";
+const categoryId = import.meta.env.PUBLIC_GISCUS_CATEGORY_ID?.trim();
+const configured = Boolean(categoryId);
+const discussionsUrl = `https://github.com/${repo}/discussions`;
 ---
 
 <section class="comments-section pixel-window" aria-labelledby="comments-title">
   <h2 id="comments-title">驿站留言</h2>
   {configured ? (
-    <script
-      is:inline
-      src="https://giscus.app/client.js"
-      data-repo={repo}
-      data-repo-id={repoId}
-      data-category={category}
-      data-category-id={categoryId}
-      data-mapping="pathname"
-      data-strict="1"
-      data-reactions-enabled="1"
-      data-emit-metadata="0"
-      data-input-position="top"
-      data-theme="preferred_color_scheme"
-      data-lang="zh-CN"
-      crossorigin="anonymous"
-      async
-    ></script>
+    <>
+      <p class="comments-intro">欢迎在此留下本周的想法。登录 GitHub 后即可评论、回复或送出回应。</p>
+      <div class="giscus"></div>
+      <script
+        is:inline
+        src="https://giscus.app/client.js"
+        data-repo={repo}
+        data-repo-id={repoId}
+        data-category={category}
+        data-category-id={categoryId}
+        data-mapping="pathname"
+        data-strict="1"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async
+      ></script>
+      <noscript>
+        请启用 JavaScript，或前往 <a href={discussionsUrl}>GitHub Discussions</a> 查看留言。
+      </noscript>
+    </>
   ) : (
-    <p class="comments-unconfigured">评论功能尚未配置。配置 giscus 后，访客需登录 GitHub 才能评论和回复。</p>
+    <div class="comments-unconfigured" role="status">
+      <strong>驿站正在开门准备中</strong>
+      <p>完成 GitHub Discussions 与 Giscus 连接后，这里将开放每周留言和回应。</p>
+    </div>
   )}
 </section>
 
@@ -38,8 +50,28 @@ const configured = Boolean(repo && repoId && category && categoryId);
   .comments-section h2 {
     margin-top: 0;
   }
-  .comments-unconfigured {
-    margin-bottom: 0;
+
+  .comments-intro,
+  .comments-unconfigured p {
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .comments-intro {
+    margin: 0 0 1rem;
+  }
+
+  .comments-unconfigured p {
+    margin: 0.35rem 0 0;
+  }
+
+  .comments-section :global(.giscus) {
+    min-height: 160px;
+  }
+
+  .comments-section noscript {
+    display: block;
+    margin-top: 1rem;
     color: var(--muted);
   }
 </style>
