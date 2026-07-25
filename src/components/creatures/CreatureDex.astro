@@ -1,0 +1,22 @@
+---
+import type { Creature, Project, ReportItem } from "@/types/content";
+import CreatureCard from "./CreatureCard.astro";
+
+interface Props {
+  projects: Project[];
+  creatures: Creature[];
+  items: ReportItem[];
+}
+
+const { projects, creatures, items } = Astro.props;
+---
+
+<div class="creature-dex grid grid-3">
+  {projects.map((project) => {
+    const creature = creatures.find((candidate) => candidate.id === project.creatureId);
+    if (!creature) return null;
+    const related = items.filter((item) => item.status === "published" && item.projects.includes(project.name));
+    const latestDate = [...related].sort((a, b) => b.date.localeCompare(a.date))[0]?.date;
+    return <CreatureCard project={project} creature={creature} count={related.length} latestDate={latestDate} />;
+  })}
+</div>

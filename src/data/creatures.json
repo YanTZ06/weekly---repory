@@ -1,0 +1,35 @@
+[
+  {
+    "id": "mechanical-01",
+    "name": "齿轮獾",
+    "element": "mechanical",
+    "sprite": "/assets/creatures/mechanical/mechanical-01.png",
+    "largeSprite": "/assets/creatures/mechanical/mechanical-01-large.png",
+    "enabled": true,
+    "source": "项目内程序化原创像素资源",
+    "author": "徽州灵兽周记项目",
+    "license": "CC0-1.0"
+  },
+  {
+    "id": "water-01",
+    "name": "溪团兽",
+    "element": "water",
+    "sprite": "/assets/creatures/water/water-01.png",
+    "largeSprite": "/assets/creatures/water/water-01-large.png",
+    "enabled": true,
+    "source": "项目内程序化原创像素资源",
+    "author": "徽州灵兽周记项目",
+    "license": "CC0-1.0"
+  },
+  {
+    "id": "nature-01",
+    "name": "荷芽灵",
+    "element": "nature",
+    "sprite": "/assets/creatures/nature/nature-01.png",
+    "largeSprite": "/assets/creatures/nature/nature-01-large.png",
+    "enabled": true,
+    "source": "项目内程序化原创像素资源",
+    "author": "徽州灵兽周记项目",
+    "license": "CC0-1.0"
+  }
+]

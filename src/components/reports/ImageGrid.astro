@@ -1,0 +1,78 @@
+---
+import "photoswipe/style.css";
+import { assetUrl } from "@/utils/paths";
+import ImageLightbox from "./ImageLightbox.astro";
+
+interface Props {
+  images: string[];
+  itemId: string;
+}
+
+const { images, itemId } = Astro.props;
+---
+
+{images.length > 0 && (
+  <>
+    <div class="image-grid" data-pswp-gallery={`gallery-${itemId}`} aria-label="事项图片">
+      {images.map((image, index) => (
+        <a
+          href={assetUrl(image)}
+          data-pswp-width="1600"
+          data-pswp-height="1200"
+          target="_blank"
+          rel="noopener"
+          aria-label={`打开第 ${index + 1} 张图片，共 ${images.length} 张`}
+        >
+          <img
+            src={assetUrl(image)}
+            width="560"
+            height="420"
+            alt={`周报事项 ${itemId} 的第 ${index + 1} 张图片`}
+            loading="lazy"
+            onerror="this.closest('a')?.classList.add('is-error')"
+          />
+          <span class="image-error">图片加载失败</span>
+        </a>
+      ))}
+    </div>
+    <ImageLightbox />
+  </>
+)}
+
+<style>
+  .image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+    gap: 0.7rem;
+    margin-top: 1rem;
+  }
+
+  .image-grid a {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    border: 4px solid var(--wood);
+    background: var(--wall);
+    box-shadow: 4px 4px 0 var(--tile);
+  }
+
+  .image-grid img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .image-error {
+    position: absolute;
+    inset: 0;
+    display: none;
+    place-items: center;
+    color: var(--muted);
+    background: var(--wall);
+  }
+
+  .image-grid a.is-error .image-error {
+    display: grid;
+  }
+</style>

@@ -1,0 +1,25 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import CreatureDex from "@/components/creatures/CreatureDex.astro";
+import projectsData from "@/data/projects.json";
+import creaturesData from "@/data/creatures.json";
+import type { Creature, Project } from "@/types/content";
+import { loadReportItems } from "@/utils/content";
+
+const projects = projectsData as Project[];
+const creatures = creaturesData as Creature[];
+const items = await loadReportItems();
+---
+
+<BaseLayout title="项目图鉴" description="由原创像素灵兽守护的长期项目记录">
+  <div class="content-page">
+    <header class="page-hero">
+      <div>
+        <p class="eyebrow">灵兽馆 · PROJECT DEX</p>
+        <h1>项目图鉴</h1>
+        <p class="lede">每只原创灵兽代表一个长期项目，项目中的进展从周报事项自动汇集。</p>
+      </div>
+    </header>
+    <CreatureDex projects={projects} creatures={creatures} items={items} />
+  </div>
+</BaseLayout>

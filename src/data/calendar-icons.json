@@ -1,0 +1,10 @@
+[
+  { "id": "red-flame", "name": "赤焰球", "path": "/assets/calendar-icons/red-flame.png", "enabled": true },
+  { "id": "blue-stream", "name": "青溪球", "path": "/assets/calendar-icons/blue-stream.png", "enabled": true },
+  { "id": "gold-harvest", "name": "金穗球", "path": "/assets/calendar-icons/gold-harvest.png", "enabled": true },
+  { "id": "ink-jade", "name": "墨玉球", "path": "/assets/calendar-icons/ink-jade.png", "enabled": true },
+  { "id": "cloud-pattern", "name": "云纹球", "path": "/assets/calendar-icons/cloud-pattern.png", "enabled": true },
+  { "id": "lotus", "name": "莲花球", "path": "/assets/calendar-icons/lotus.png", "enabled": true },
+  { "id": "star-moon", "name": "星月球", "path": "/assets/calendar-icons/star-moon.png", "enabled": true },
+  { "id": "huizhou-pattern", "name": "徽纹球", "path": "/assets/calendar-icons/huizhou-pattern.png", "enabled": true }
+]

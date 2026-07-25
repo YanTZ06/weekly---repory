@@ -1,0 +1,57 @@
+<div class="calendar-navigation">
+  <button class="pixel-button secondary" type="button" data-calendar-previous aria-label="上一个月">← 上月</button>
+  <label>
+    <span class="sr-only">选择年份</span>
+    <select data-calendar-year aria-label="选择年份"></select>
+  </label>
+  <strong data-calendar-title aria-live="polite"></strong>
+  <label>
+    <span class="sr-only">选择月份</span>
+    <select data-calendar-month aria-label="选择月份">
+      {Array.from({ length: 12 }, (_, index) => <option value={index}>{index + 1} 月</option>)}
+    </select>
+  </label>
+  <button class="pixel-button secondary" type="button" data-calendar-next aria-label="下一个月">下月 →</button>
+</div>
+
+<style>
+  .calendar-navigation {
+    display: grid;
+    grid-template-columns: auto 100px 1fr 90px auto;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 1rem;
+  }
+
+  .calendar-navigation strong {
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  .calendar-navigation select {
+    width: 100%;
+    min-height: 42px;
+    border: 3px solid var(--tile);
+    color: var(--ink);
+    background: var(--paper);
+    font-weight: 800;
+  }
+
+  .sr-only {
+    position: absolute;
+    overflow: hidden;
+    width: 1px;
+    height: 1px;
+    clip: rect(0 0 0 0);
+  }
+
+  @media (max-width: 720px) {
+    .calendar-navigation {
+      grid-template-columns: 1fr 1fr;
+    }
+    .calendar-navigation strong {
+      grid-column: 1 / -1;
+      grid-row: 1;
+    }
+  }
+</style>

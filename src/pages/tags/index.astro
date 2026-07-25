@@ -1,0 +1,48 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import TagBadge from "@/components/common/TagBadge.astro";
+import tagsData from "@/data/tags.json";
+import type { Tag } from "@/types/content";
+import { loadReportItems } from "@/utils/content";
+import { withBase } from "@/utils/paths";
+
+const tags = tagsData as Tag[];
+const items = await loadReportItems();
+---
+
+<BaseLayout title="标签百宝阁" description="以像素属性徽章整理周报标签">
+  <div class="content-page">
+    <header class="page-hero">
+      <div>
+        <p class="eyebrow">百宝阁 · 属性分类架</p>
+        <h1>标签</h1>
+        <p class="lede">图标、文字和数量共同表达分类，不只依赖颜色。</p>
+      </div>
+    </header>
+    <div class="tag-shelves grid grid-3">
+      {tags.map((tag) => {
+        const count = items.filter((item) => item.status === "published" && item.tags.includes(tag.name)).length;
+        return (
+          <article class="tag-shelf" style={`--tag-color:${tag.color}`}>
+            <TagBadge tag={tag} linked={false} />
+            <strong>{count} 条事项</strong>
+            <a href={withBase(`/tags/${tag.slug}/`)} aria-label={`查看 ${tag.name} 标签的事项`}>打开抽屉 →</a>
+          </article>
+        );
+      })}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .tag-shelf {
+    display: grid;
+    gap: 1rem;
+    padding: 1.2rem;
+    border: 4px solid var(--tile);
+    border-top: 10px solid var(--tag-color);
+    background: var(--white);
+    box-shadow: 7px 7px 0 var(--shadow);
+  }
+  .tag-shelf > a { font-weight: 850; }
+</style>

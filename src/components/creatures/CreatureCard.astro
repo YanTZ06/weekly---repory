@@ -1,0 +1,69 @@
+---
+import type { Creature, Project } from "@/types/content";
+import { assetUrl, withBase } from "@/utils/paths";
+
+interface Props {
+  project: Project;
+  creature: Creature;
+  count: number;
+  latestDate?: string;
+}
+
+const { project, creature, count, latestDate = "暂无记录" } = Astro.props;
+---
+
+<article class="creature-card">
+  <div class:list={["creature-stage", `element-${creature.element}`]}>
+    <span class="dex-number mono">#{creature.id}</span>
+    <img class="pixel-art" src={assetUrl(creature.largeSprite)} width="128" height="128" alt={creature.name} loading="lazy" />
+  </div>
+  <div class="creature-card-body">
+    <p class="eyebrow">{creature.name}</p>
+    <h2>{project.name}</h2>
+    <dl>
+      <div><dt>关联事项</dt><dd>{count}</dd></div>
+      <div><dt>最近更新</dt><dd>{latestDate}</dd></div>
+    </dl>
+    <a class="pixel-button" href={withBase(`/projects/${project.slug}/`)}>打开项目记录</a>
+  </div>
+</article>
+
+<style>
+  .creature-card {
+    display: grid;
+    overflow: hidden;
+    border: 4px solid var(--tile);
+    background: var(--white);
+    box-shadow: 7px 7px 0 var(--shadow);
+  }
+
+  .creature-stage {
+    position: relative;
+    display: grid;
+    min-height: 190px;
+    place-items: center;
+    border-bottom: 4px solid var(--tile);
+    background:
+      radial-gradient(circle at 50% 72%, rgba(255, 255, 255, 0.7) 0 18%, transparent 19%),
+      color-mix(in srgb, var(--water) 42%, var(--wall));
+  }
+  .element-mechanical { background-color: #aebac4; }
+  .element-nature { background-color: #a9d989; }
+  .creature-stage img { width: 128px; height: 128px; object-fit: contain; }
+
+  .dex-number {
+    position: absolute;
+    top: 0.7rem;
+    left: 0.7rem;
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+  }
+
+  .creature-card-body { padding: 1.1rem; }
+  .creature-card-body h2 { margin: 0; }
+  .creature-card-body dl { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .creature-card-body dl div { padding: 0.5rem; border: 2px solid var(--tile); background: var(--wall); }
+  .creature-card-body dt { color: var(--muted); font-size: 0.72rem; }
+  .creature-card-body dd { margin: 0.2rem 0 0; font-weight: 850; }
+</style>

@@ -1,0 +1,12 @@
+---
+interface Props {
+  class?: string;
+  ariaLabel?: string;
+}
+
+const { class: className = "", ariaLabel } = Astro.props;
+---
+
+<section class:list={["pixel-window", className]} aria-label={ariaLabel}>
+  <slot />
+</section>

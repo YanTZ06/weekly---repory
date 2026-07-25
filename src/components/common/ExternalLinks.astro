@@ -1,0 +1,28 @@
+---
+import type { Profile } from "@/types/config";
+
+interface Props {
+  links: Profile["links"];
+}
+
+const { links } = Astro.props;
+const visibleLinks = links.filter((link) => link.visible).sort((a, b) => a.order - b.order);
+---
+
+<ul class="external-links list-reset" aria-label="外部链接">
+  {visibleLinks.map((link) => (
+    <li>
+      <a class="pixel-button secondary" href={link.url} target="_blank" rel="noopener noreferrer">
+        <span aria-hidden="true">↗</span>{link.name}
+      </a>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .external-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+</style>

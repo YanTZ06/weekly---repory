@@ -1,0 +1,17 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SearchBox from "@/components/search/SearchBox.astro";
+---
+
+<BaseLayout title="藏书楼搜索" description="使用 Pagefind 在浏览器本地搜索周报档案">
+  <div class="content-page">
+    <header class="page-hero">
+      <div>
+        <p class="eyebrow">藏书楼 · 静态全文索引</p>
+        <h1>搜索档案</h1>
+        <p class="lede">搜索在浏览器本地完成，不会把关键词发送到独立服务器。</p>
+      </div>
+    </header>
+    <SearchBox />
+  </div>
+</BaseLayout>

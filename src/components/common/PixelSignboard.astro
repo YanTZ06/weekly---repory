@@ -1,0 +1,9 @@
+---
+interface Props {
+  element?: "h1" | "h2" | "h3" | "div";
+}
+
+const { element: Tag = "div" } = Astro.props;
+---
+
+<Tag class="pixel-signboard"><slot /></Tag>

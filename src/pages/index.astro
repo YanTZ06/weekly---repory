@@ -1,0 +1,53 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import VillageMap from "@/components/map/VillageMap.astro";
+import PixelWindow from "@/components/common/PixelWindow.astro";
+import PixelButton from "@/components/common/PixelButton.astro";
+import { loadReportItems } from "@/utils/content";
+import { aggregateWeeklyReports } from "@/utils/reports";
+import { withBase } from "@/utils/paths";
+
+const items = await loadReportItems();
+const latestReport = aggregateWeeklyReports(items)[0];
+---
+
+<BaseLayout>
+  <VillageMap items={items} />
+  <section class="home-after-map site-shell" aria-labelledby="latest-title">
+    <PixelWindow>
+      <p class="eyebrow">从地图之外继续</p>
+      <h2 id="latest-title">最近的成长档案</h2>
+      {latestReport ? (
+        <>
+          <p class="lede">
+            {latestReport.weekYear} 年第 {latestReport.week} 周，共 {latestReport.items.length} 条记录，
+            涉及 {latestReport.projects.length} 个项目。
+          </p>
+          <div class="home-actions">
+            <PixelButton href={withBase(`/reports/${latestReport.weekYear}/${latestReport.week}/`)}>
+              打开本周档案
+            </PixelButton>
+            <PixelButton href={withBase("/manage/")} variant="secondary">前往管理小屋</PixelButton>
+          </div>
+        </>
+      ) : (
+        <p>村落中还没有周报。可以前往管理小屋创建第一条事项。</p>
+      )}
+    </PixelWindow>
+  </section>
+</BaseLayout>
+
+<style>
+  .home-after-map {
+    padding: 2.5rem 0 4rem;
+  }
+  .home-after-map h2 {
+    margin: 0;
+  }
+  .home-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 1.2rem;
+  }
+</style>

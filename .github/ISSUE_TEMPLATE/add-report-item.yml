@@ -1,0 +1,78 @@
+name: 新增周报事项
+description: 由仓库所有者新增一条纯文本周报事项
+title: "[新增事项] "
+labels: ["report:add"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        只有仓库所有者提交后才会修改内容。事项正文只支持纯文本。
+  - type: input
+    id: date
+    attributes:
+      label: 事项日期
+      description: 使用 YYYY-MM-DD，系统会自动计算 ISO 周。
+      placeholder: "2026-07-25"
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: 分类
+      options:
+        - 为科协做了什么
+        - 为自己做了什么
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: content
+    attributes:
+      label: 事项内容
+      description: 只填写纯文本，不使用 Markdown 或 HTML。
+    validations:
+      required: true
+  - type: textarea
+    id: projects
+    attributes:
+      label: 项目
+      description: 多个项目使用中文逗号或换行分隔。
+  - type: textarea
+    id: tags
+    attributes:
+      label: 标签
+      description: 多个标签使用中文逗号或换行分隔。
+  - type: dropdown
+    id: emoji-type
+    attributes:
+      label: 事项主表情类型
+      options: [unicode, custom]
+    validations:
+      required: true
+  - type: input
+    id: emoji
+    attributes:
+      label: Unicode 表情或自定义表情 ID
+      placeholder: "📝"
+    validations:
+      required: true
+  - type: input
+    id: calendar-icon
+    attributes:
+      label: 日历记录球
+      description: 填写 calendar-icons.json 中已启用的 ID。
+      placeholder: red-flame
+    validations:
+      required: true
+  - type: textarea
+    id: images
+    attributes:
+      label: 图片
+      description: 将最多 9 张 PNG/JPG/JPEG/WebP/GIF 拖到这里。
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: 确认提交
+      options:
+        - label: 我确认内容可公开，且拥有上传图片的使用权。
+          required: true

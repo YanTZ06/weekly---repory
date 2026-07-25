@@ -1,0 +1,40 @@
+---
+import type { ReportCategory, ReportItem as ReportItemData } from "@/types/content";
+import PixelSignboard from "@/components/common/PixelSignboard.astro";
+import ReportItem from "./ReportItem.astro";
+
+interface Props {
+  category: ReportCategory;
+  items: ReportItemData[];
+}
+
+const { category, items } = Astro.props;
+const categories: Record<ReportCategory, { number: string; title: string }> = {
+  "science-association": { number: "01", title: "为科协做了什么" },
+  personal: { number: "02", title: "为自己做了什么" },
+  other: { number: "03", title: "其他" }
+};
+const meta = categories[category];
+---
+
+{items.length > 0 && (
+  <section class="category-section" aria-labelledby={`category-${category}`}>
+    <PixelSignboard element="h2">
+      <span class="mono">{meta.number}</span> {meta.title}
+    </PixelSignboard>
+    <div class="category-items">
+      {items.map((item) => <ReportItem item={item} />)}
+    </div>
+  </section>
+)}
+
+<style>
+  .category-section {
+    margin-top: 2.5rem;
+  }
+
+  .category-section :global(.pixel-signboard) {
+    margin: 0 0 1rem;
+    font-size: 1.15rem;
+  }
+</style>

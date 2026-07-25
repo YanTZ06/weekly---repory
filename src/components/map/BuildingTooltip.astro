@@ -1,0 +1,52 @@
+---
+interface Props {
+  name: string;
+  description: string;
+}
+
+const { name, description } = Astro.props;
+---
+
+<span class="building-tooltip" role="tooltip">
+  <strong>{name}</strong>
+  <small>{description}</small>
+</span>
+
+<style>
+  .building-tooltip {
+    position: absolute;
+    z-index: 15;
+    left: 50%;
+    bottom: calc(100% + 14px);
+    display: grid;
+    min-width: 170px;
+    padding: 0.65rem 0.8rem;
+    border: 3px solid var(--wood-dark);
+    color: #fff9e9;
+    background: var(--wood);
+    box-shadow: 4px 4px 0 rgba(38, 55, 70, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    translate: -50% 8px;
+    transition: 120ms ease;
+  }
+
+  .building-tooltip::after {
+    position: absolute;
+    left: calc(50% - 6px);
+    bottom: -9px;
+    width: 12px;
+    height: 12px;
+    border-right: 3px solid var(--wood-dark);
+    border-bottom: 3px solid var(--wood-dark);
+    content: "";
+    background: var(--wood);
+    rotate: 45deg;
+  }
+
+  .building-tooltip small {
+    margin-top: 0.2rem;
+    color: #ffe2ae;
+    white-space: nowrap;
+  }
+</style>

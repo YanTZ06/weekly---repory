@@ -1,0 +1,14 @@
+---
+interface Props {
+  title?: string;
+  message?: string;
+}
+
+const { title = "这里还是一张空白宣纸", message = "暂时没有可展示的记录。" } = Astro.props;
+---
+
+<div class="empty-state" role="status">
+  <p aria-hidden="true" style="font-size:2rem;margin:0">🏮</p>
+  <h2>{title}</h2>
+  <p>{message}</p>
+</div>

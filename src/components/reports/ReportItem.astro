@@ -1,0 +1,78 @@
+---
+import tagsData from "@/data/tags.json";
+import type { ReportItem as ReportItemData, Tag } from "@/types/content";
+import EmojiDisplay from "./EmojiDisplay.astro";
+import CalendarIconDisplay from "./CalendarIconDisplay.astro";
+import ProjectCreatureBadge from "@/components/creatures/ProjectCreatureBadge.astro";
+import TagBadge from "@/components/common/TagBadge.astro";
+import ImageGrid from "./ImageGrid.astro";
+
+interface Props {
+  item: ReportItemData;
+}
+
+const { item } = Astro.props;
+const tags = tagsData as Tag[];
+---
+
+<article class="report-item" id={item.id} data-pagefind-body>
+  <header class="report-item-header">
+    <EmojiDisplay emoji={item.emoji} />
+    <time datetime={item.date}>{item.date}</time>
+    <span class="report-item-ball"><CalendarIconDisplay id={item.calendarIcon} size={32} /></span>
+  </header>
+  <p class="report-item-body">{item.body}</p>
+  {(item.projects.length > 0 || item.tags.length > 0) && (
+    <footer class="report-item-footer">
+      <div class="badge-row">
+        {item.projects.map((project) => <ProjectCreatureBadge projectName={project} />)}
+        {item.tags.map((tagName) => {
+          const tag = tags.find((candidate) => candidate.name === tagName);
+          return tag && <TagBadge tag={tag} />;
+        })}
+      </div>
+    </footer>
+  )}
+  <ImageGrid images={item.images} itemId={item.id} />
+</article>
+
+<style>
+  .report-item {
+    padding: 1rem;
+    border: 3px solid color-mix(in srgb, var(--wood) 70%, var(--tile));
+    background: var(--white);
+    box-shadow: 4px 4px 0 color-mix(in srgb, var(--wood) 35%, transparent);
+  }
+
+  .report-item + .report-item {
+    margin-top: 1rem;
+  }
+
+  .report-item-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 2px dashed color-mix(in srgb, var(--wood) 45%, transparent);
+  }
+
+  .report-item-header time {
+    color: var(--muted);
+    font: 800 0.86rem/1 ui-monospace, "Cascadia Code", monospace;
+  }
+
+  .report-item-ball {
+    margin-left: auto;
+  }
+
+  .report-item-body {
+    margin: 1rem 0;
+    font-size: 1rem;
+    line-height: 1.9;
+    white-space: pre-wrap;
+  }
+
+  .report-item-footer {
+    margin-top: 1rem;
+  }
+</style>

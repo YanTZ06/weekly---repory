@@ -1,0 +1,27 @@
+<button class="theme-toggle" type="button" aria-label="切换昼夜主题" title="切换昼夜主题" data-theme-toggle>
+  <span aria-hidden="true" data-theme-icon>☀</span>
+</button>
+
+<script is:inline>
+  (() => {
+    const root = document.documentElement;
+    const button = document.querySelector("[data-theme-toggle]");
+    const icon = button?.querySelector("[data-theme-icon]");
+    const saved = localStorage.getItem("huizhou-theme");
+    const systemNight = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const initial = saved || (systemNight ? "night" : "day");
+
+    const apply = (theme) => {
+      root.dataset.theme = theme;
+      if (icon) icon.textContent = theme === "night" ? "☾" : "☀";
+      button?.setAttribute("aria-pressed", String(theme === "night"));
+    };
+
+    apply(initial);
+    button?.addEventListener("click", () => {
+      const next = root.dataset.theme === "night" ? "day" : "night";
+      localStorage.setItem("huizhou-theme", next);
+      apply(next);
+    });
+  })();
+</script>

@@ -1,0 +1,35 @@
+---
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import WeeklyReportPage from "@/components/reports/WeeklyReportPage.astro";
+import { loadReportItems } from "@/utils/content";
+import { aggregateWeeklyReports } from "@/utils/reports";
+import type { WeeklyReport } from "@/types/content";
+
+export const getStaticPaths = (async () => {
+  const reports = aggregateWeeklyReports(await loadReportItems());
+  return reports.map((report, index) => ({
+    params: { weekYear: String(report.weekYear), week: String(report.week) },
+    props: {
+      report,
+      previous: reports[index + 1],
+      next: reports[index - 1]
+    }
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  report: WeeklyReport;
+  previous?: WeeklyReport;
+  next?: WeeklyReport;
+}
+
+const { report, previous, next } = Astro.props;
+---
+
+<BaseLayout
+  title={`${report.weekYear} 年第 ${report.week} 周`}
+  description={`${report.startDate} 至 ${report.endDate} 的个人周报，共 ${report.items.length} 条事项。`}
+>
+  <WeeklyReportPage report={report} previous={previous} next={next} />
+</BaseLayout>

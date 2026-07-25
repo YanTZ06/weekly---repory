@@ -1,0 +1,264 @@
+---
+import type { ReportItem } from "@/types/content";
+import CalendarCell from "./CalendarCell.astro";
+import CalendarMonthNavigation from "./CalendarMonthNavigation.astro";
+import calendarIcons from "@/data/calendar-icons.json";
+
+interface Props {
+  items: ReportItem[];
+}
+
+const { items } = Astro.props;
+const singaporeNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Singapore" }));
+const year = singaporeNow.getFullYear();
+const month = singaporeNow.getMonth();
+const today = [
+  year,
+  String(month + 1).padStart(2, "0"),
+  String(singaporeNow.getDate()).padStart(2, "0")
+].join("-");
+const first = new Date(year, month, 1);
+const mondayOffset = (first.getDay() + 6) % 7;
+const gridStart = new Date(year, month, 1 - mondayOffset);
+const dates = Array.from({ length: 42 }, (_, index) => {
+  const date = new Date(gridStart);
+  date.setDate(gridStart.getDate() + index);
+  return date;
+});
+const iconPaths = new Map(calendarIcons.map((icon) => [icon.id, icon.path]));
+const clientItems = items
+  .filter((item) => item.status === "published")
+  .map(({ date, calendarIcon, createdAt, weekYear, week }) => ({
+    date,
+    calendarIconPath: iconPaths.get(calendarIcon) ?? "/assets/calendar-icons/huizhou-pattern.png",
+    createdAt,
+    weekYear,
+    week
+  }));
+---
+
+<section
+  class="calendar-board"
+  data-calendar-board
+  data-items={JSON.stringify(clientItems)}
+  data-base={import.meta.env.BASE_URL}
+  data-initial-year={year}
+  data-initial-month={month}
+  data-today={today}
+>
+  <CalendarMonthNavigation />
+  <div class="calendar-weekdays" aria-hidden="true">
+    {["一", "二", "三", "四", "五", "六", "日"].map((day) => <span>周{day}</span>)}
+  </div>
+  <div class="calendar-grid" data-calendar-grid>
+    {dates.map((date) => <CalendarCell date={date} displayMonth={month} items={items} today={today} />)}
+  </div>
+</section>
+
+<script>
+  interface CalendarRecord {
+    date: string;
+    calendarIconPath: string;
+    createdAt: string;
+    weekYear: number;
+    week: number;
+  }
+
+  const board = document.querySelector<HTMLElement>("[data-calendar-board]");
+  if (board) {
+    const records = JSON.parse(board.dataset.items ?? "[]") as CalendarRecord[];
+    const base = board.dataset.base === "/" ? "/" : board.dataset.base ?? "/";
+    const today = board.dataset.today ?? "";
+    let currentYear = Number(board.dataset.initialYear);
+    let currentMonth = Number(board.dataset.initialMonth);
+    const grid = board.querySelector<HTMLElement>("[data-calendar-grid]");
+    const title = board.querySelector<HTMLElement>("[data-calendar-title]");
+    const yearSelect = board.querySelector<HTMLSelectElement>("[data-calendar-year]");
+    const monthSelect = board.querySelector<HTMLSelectElement>("[data-calendar-month]");
+
+    const yearsFromData = records.map((item) => Number(item.date.slice(0, 4)));
+    const minYear = Math.min(currentYear - 3, ...yearsFromData);
+    const maxYear = Math.max(currentYear + 3, ...yearsFromData);
+    if (yearSelect) {
+      for (let value = minYear; value <= maxYear; value += 1) {
+        const option = document.createElement("option");
+        option.value = String(value);
+        option.textContent = `${value} 年`;
+        yearSelect.append(option);
+      }
+    }
+
+    const iconPath = (publicPath: string) => `${base}${publicPath.replace(/^\/+/, "")}`;
+
+    const dateString = (date: Date) =>
+      `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+    const render = () => {
+      if (!grid || !title || !yearSelect || !monthSelect) return;
+      title.textContent = `${currentYear} 年 ${currentMonth + 1} 月`;
+      yearSelect.value = String(currentYear);
+      monthSelect.value = String(currentMonth);
+      const first = new Date(currentYear, currentMonth, 1);
+      const offset = (first.getDay() + 6) % 7;
+      const start = new Date(currentYear, currentMonth, 1 - offset);
+      grid.replaceChildren();
+
+      for (let index = 0; index < 42; index += 1) {
+        const date = new Date(start);
+        date.setDate(start.getDate() + index);
+        const key = dateString(date);
+        const dayRecords = records
+          .filter((item) => item.date === key)
+          .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+        const latest = dayRecords.at(-1);
+        const cell = document.createElement("div");
+        cell.className = [
+          "calendar-cell",
+          date.getMonth() !== currentMonth ? "outside-month" : "",
+          key === today ? "is-today" : "",
+          latest ? "has-items" : ""
+        ].filter(Boolean).join(" ");
+        const content = latest ? document.createElement("a") : document.createElement("span");
+        content.setAttribute(
+          "aria-label",
+          latest ? `${key}，${dayRecords.length} 条事项` : `${key}，无事项`
+        );
+        if (latest && content instanceof HTMLAnchorElement) {
+          content.href = `${base}reports/${latest.weekYear}/${latest.week}/`;
+        }
+        const day = document.createElement("span");
+        day.className = "calendar-date";
+        day.textContent = String(date.getDate());
+        const ball = document.createElement("span");
+        ball.className = "calendar-ball";
+        if (latest) {
+          const image = document.createElement("img");
+          image.className = "pixel-art";
+          image.src = iconPath(latest.calendarIconPath);
+          image.width = 32;
+          image.height = 32;
+          image.alt = "记录球";
+          ball.append(image);
+        } else {
+          ball.textContent = "·";
+          ball.setAttribute("aria-hidden", "true");
+        }
+        const count = document.createElement("span");
+        count.className = "calendar-count";
+        count.textContent = latest ? `×${dayRecords.length}` : "无记录";
+        content.append(day, ball, count);
+        cell.append(content);
+        grid.append(cell);
+      }
+    };
+
+    board.querySelector("[data-calendar-previous]")?.addEventListener("click", () => {
+      currentMonth -= 1;
+      if (currentMonth < 0) { currentMonth = 11; currentYear -= 1; }
+      render();
+    });
+    board.querySelector("[data-calendar-next]")?.addEventListener("click", () => {
+      currentMonth += 1;
+      if (currentMonth > 11) { currentMonth = 0; currentYear += 1; }
+      render();
+    });
+    yearSelect?.addEventListener("change", () => { currentYear = Number(yearSelect.value); render(); });
+    monthSelect?.addEventListener("change", () => { currentMonth = Number(monthSelect.value); render(); });
+    render();
+  }
+</script>
+
+<style is:global>
+  .calendar-board {
+    padding: 1.4rem;
+    border: 8px solid var(--wood-dark);
+    background:
+      linear-gradient(90deg, rgba(112, 67, 41, 0.16) 1px, transparent 1px),
+      var(--wood);
+    background-size: 24px 100%;
+    box-shadow: 10px 10px 0 var(--shadow);
+  }
+
+  .calendar-weekdays,
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(74px, 1fr));
+  }
+
+  .calendar-weekdays {
+    margin-bottom: 0.4rem;
+    color: #fff9e9;
+    font-weight: 900;
+    text-align: center;
+  }
+
+  .calendar-cell {
+    min-height: 112px;
+    border: 2px solid var(--wood-dark);
+    background: var(--wall);
+  }
+
+  .calendar-cell > a,
+  .calendar-cell > span {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    min-height: 108px;
+    grid-template-rows: auto 1fr auto;
+    padding: 0.45rem;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .calendar-cell > a:hover {
+    background: color-mix(in srgb, var(--yellow) 25%, var(--wall));
+  }
+
+  .calendar-cell.outside-month {
+    opacity: 0.46;
+  }
+
+  .calendar-cell.is-today {
+    outline: 4px solid var(--red);
+    outline-offset: -5px;
+  }
+
+  .calendar-cell.has-items {
+    border-top: 5px solid var(--tile);
+  }
+
+  .calendar-date {
+    font: 900 0.86rem/1 ui-monospace, "Cascadia Code", monospace;
+  }
+
+  .calendar-ball {
+    display: grid;
+    place-items: center;
+    font-size: 1.4rem;
+  }
+
+  .calendar-count {
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  @media (max-width: 720px) {
+    .calendar-board {
+      overflow-x: auto;
+      padding: 0.8rem;
+    }
+    .calendar-weekdays,
+    .calendar-grid {
+      width: 602px;
+    }
+    .calendar-cell {
+      min-height: 92px;
+    }
+    .calendar-cell > a,
+    .calendar-cell > span {
+      min-height: 88px;
+    }
+  }
+</style>

@@ -1,0 +1,49 @@
+<div class="day-night-overlay" aria-hidden="true">
+  <span class="sun"></span>
+  <span class="moon">☾</span>
+  <span class="stars">· ✦ · · ✧ ·</span>
+</div>
+
+<style>
+  .day-night-overlay {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .sun {
+    position: absolute;
+    right: 180px;
+    top: 70px;
+    width: 58px;
+    height: 58px;
+    border: 6px solid #f0a939;
+    background: var(--yellow);
+    box-shadow: 0 0 0 12px rgba(255, 212, 90, 0.22);
+  }
+
+  .moon,
+  .stars {
+    display: none;
+  }
+
+  :global(:root[data-theme="night"]) .sun { display: none; }
+  :global(:root[data-theme="night"]) .moon {
+    position: absolute;
+    right: 190px;
+    top: 60px;
+    display: block;
+    color: #fff3b5;
+    font-size: 72px;
+  }
+  :global(:root[data-theme="night"]) .stars {
+    position: absolute;
+    top: 32px;
+    right: 420px;
+    display: block;
+    color: #fff3b5;
+    font-size: 30px;
+    letter-spacing: 1.7rem;
+  }
+</style>

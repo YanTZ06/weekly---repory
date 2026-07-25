@@ -1,0 +1,74 @@
+---
+import "@/styles/global.css";
+import profile from "@/data/profile.json";
+import QuickNavigation from "@/components/common/QuickNavigation.astro";
+import ThemeToggle from "@/components/common/ThemeToggle.astro";
+import { withBase } from "@/utils/paths";
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+const {
+  title = profile.siteTitle,
+  description = profile.description,
+  image = withBase("/assets/og/huizhou-weekly-preview.png")
+} = Astro.props;
+const fullTitle = title === profile.siteTitle ? title : `${title}｜${profile.siteTitle}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const month = new Date().getMonth() + 1;
+const season = month >= 3 && month <= 5 ? "spring" : month <= 8 ? "summer" : month <= 11 ? "autumn" : "winter";
+---
+
+<!doctype html>
+<html lang="zh-CN" data-season={season}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#263746" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL(image.replace(/^\//, ""), Astro.site)} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/png" href={withBase("/assets/calendar-icons/huizhou-pattern.png")} />
+    <title>{fullTitle}</title>
+    <script is:inline>
+      (() => {
+        const saved = localStorage.getItem("huizhou-theme");
+        const systemNight = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.dataset.theme = saved || (systemNight ? "night" : "day");
+        if (localStorage.getItem("huizhou-motion") === "reduced") {
+          document.documentElement.dataset.motion = "reduced";
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">跳过地图，进入主要内容</a>
+    <header class="site-header">
+      <div class="site-shell header-row">
+        <a class="brand" href={withBase("/")}>
+          <span class="brand-mark" aria-hidden="true">徽</span>
+          <span>{profile.siteTitle}</span>
+        </a>
+        <QuickNavigation />
+        <ThemeToggle />
+      </div>
+    </header>
+    <main id="main-content">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="site-shell">
+        <p><strong>{profile.siteTitle}</strong> · 无后端、无数据库，成长档案保存在 GitHub 仓库中。</p>
+        <p class="mono">Astro · GitHub Pages · GitHub Discussions</p>
+      </div>
+    </footer>
+  </body>
+</html>

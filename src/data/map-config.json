@@ -1,0 +1,88 @@
+{
+  "autoSeason": true,
+  "disableAnimations": false,
+  "width": 2200,
+  "height": 720,
+  "buildings": [
+    {
+      "id": "gate",
+      "name": "村口牌坊",
+      "description": "回到村落与主人信息",
+      "href": "/",
+      "x": 70,
+      "y": 360,
+      "width": 190,
+      "kind": "gate"
+    },
+    {
+      "id": "academy",
+      "name": "徽州书院",
+      "description": "查看历年周报",
+      "href": "/reports/",
+      "x": 390,
+      "y": 265,
+      "width": 330,
+      "kind": "academy"
+    },
+    {
+      "id": "notice",
+      "name": "木制告示栏",
+      "description": "打开周报日历",
+      "href": "/calendar/",
+      "x": 790,
+      "y": 410,
+      "width": 185,
+      "kind": "notice"
+    },
+    {
+      "id": "creature-hall",
+      "name": "灵兽馆",
+      "description": "浏览项目图鉴",
+      "href": "/projects/",
+      "x": 1025,
+      "y": 280,
+      "width": 265,
+      "kind": "hall"
+    },
+    {
+      "id": "treasure",
+      "name": "百宝阁",
+      "description": "查看属性标签",
+      "href": "/tags/",
+      "x": 1335,
+      "y": 350,
+      "width": 220,
+      "kind": "shop"
+    },
+    {
+      "id": "library",
+      "name": "藏书楼",
+      "description": "搜索成长档案",
+      "href": "/search/",
+      "x": 1595,
+      "y": 235,
+      "width": 270,
+      "kind": "library"
+    },
+    {
+      "id": "courtyard",
+      "name": "临水小院",
+      "description": "了解村落主人",
+      "href": "/about/",
+      "x": 1900,
+      "y": 330,
+      "width": 220,
+      "kind": "courtyard"
+    },
+    {
+      "id": "manage",
+      "name": "管理小屋",
+      "description": "通过 GitHub 管理内容",
+      "href": "/manage/",
+      "x": 1180,
+      "y": 500,
+      "width": 170,
+      "kind": "manage"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+---
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ProjectCreaturePanel from "@/components/creatures/ProjectCreaturePanel.astro";
+import ReportItem from "@/components/reports/ReportItem.astro";
+import EmptyState from "@/components/common/EmptyState.astro";
+import projectsData from "@/data/projects.json";
+import creaturesData from "@/data/creatures.json";
+import type { Creature, Project, ReportItem as ReportItemData } from "@/types/content";
+import { loadReportItems } from "@/utils/content";
+
+export const getStaticPaths = (async () => {
+  const projects = projectsData as Project[];
+  const creatures = creaturesData as Creature[];
+  const items = await loadReportItems();
+  return projects.map((project) => {
+    const creature = creatures.find((candidate) => candidate.id === project.creatureId);
+    if (!creature) throw new Error(`项目 ${project.name} 缺少灵兽 ${project.creatureId}`);
+    const related = items
+      .filter((item) => item.status === "published" && item.projects.includes(project.name))
+      .sort((a, b) => b.date.localeCompare(a.date));
+    return { params: { slug: project.slug }, props: { project, creature, related } };
+  });
+}) satisfies GetStaticPaths;
+
+interface Props {
+  project: Project;
+  creature: Creature;
+  related: ReportItemData[];
+}
+
+const { project, creature, related } = Astro.props;
+---
+
+<BaseLayout title={project.name} description={`${project.name} 的关联周报事项`}>
+  <div class="content-page">
+    <ProjectCreaturePanel project={project} creature={creature} count={related.length} latestDate={related[0]?.date} />
+    <section class="project-timeline" aria-labelledby="project-records">
+      <h2 id="project-records">项目记录时间线</h2>
+      {related.length > 0 ? related.map((item) => <ReportItem item={item} />) : <EmptyState />}
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .project-timeline { margin-top: 2.5rem; }
+  .project-timeline > h2 { padding-bottom: 0.6rem; border-bottom: 4px solid var(--tile); }
+</style>

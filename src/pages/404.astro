@@ -1,0 +1,16 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PixelButton from "@/components/common/PixelButton.astro";
+import { withBase } from "@/utils/paths";
+---
+
+<BaseLayout title="迷路了">
+  <div class="content-page">
+    <section class="pixel-window empty-state">
+      <p class="eyebrow">404 · 村外迷雾</p>
+      <h1>这条青石路还没有修好</h1>
+      <p class="lede">你寻找的档案或建筑不存在。</p>
+      <div style="margin-top:1.2rem"><PixelButton href={withBase("/")}>返回村口</PixelButton></div>
+    </section>
+  </div>
+</BaseLayout>

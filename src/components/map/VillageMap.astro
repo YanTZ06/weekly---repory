@@ -1,0 +1,521 @@
+---
+import mapConfigData from "@/data/map-config.json";
+import profileData from "@/data/profile.json";
+import projectsData from "@/data/projects.json";
+import creaturesData from "@/data/creatures.json";
+import type { MapConfig, Profile } from "@/types/config";
+import type { Creature, Project, ReportItem } from "@/types/content";
+import { getISOWeekInfo } from "@/utils/date";
+import { withBase } from "@/utils/paths";
+import MapLayer from "./MapLayer.astro";
+import MapBuilding from "./MapBuilding.astro";
+import MapCreature from "./MapCreature.astro";
+import PlayerAvatar from "./PlayerAvatar.astro";
+import ReturnToGateButton from "./ReturnToGateButton.astro";
+import SeasonOverlay from "./SeasonOverlay.astro";
+import DayNightOverlay from "./DayNightOverlay.astro";
+
+interface Props {
+  items: ReportItem[];
+}
+
+const { items } = Astro.props;
+const mapConfig = mapConfigData as MapConfig;
+const profile = profileData as Profile;
+const projects = projectsData as Project[];
+const creatures = creaturesData as Creature[];
+const currentWeek = getISOWeekInfo(new Date());
+const currentItems = items.filter(
+  (item) => item.status === "published" && item.weekYear === currentWeek.weekYear && item.week === currentWeek.week
+);
+const hasCurrentWeek = currentItems.length > 0;
+const creaturePositions = [
+  [680, 520],
+  [985, 575],
+  [1475, 545],
+  [1770, 500],
+  [1260, 590],
+  [2070, 535]
+] as const;
+const activeProjects = projects.filter((project) => project.showOnMap).slice(0, 7);
+---
+
+<section class="village-section" aria-labelledby="village-map-title">
+  <div class="map-intro site-shell">
+    <div>
+      <p class="eyebrow">本周探索 · {currentWeek.key}</p>
+      <h1 id="village-map-title">{profile.siteTitle}</h1>
+      <p class="lede">{profile.description}</p>
+    </div>
+    <div class:list={["week-status", hasCurrentWeek && "has-records"]} role="status">
+      <span aria-hidden="true">{hasCurrentWeek ? "✦" : "!"}</span>
+      <div>
+        <strong>{hasCurrentWeek ? `本周已有 ${currentItems.length} 条记录` : "本周还没有新的记录"}</strong>
+        <small>{hasCurrentWeek ? "书院的窗户已经亮起" : "管理小屋正在等你"}</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-toolbar site-shell" aria-label="地图操作">
+    <ReturnToGateButton />
+    <button class="pixel-button secondary" type="button" data-map-back>返回上一区域</button>
+    <button class="pixel-button secondary" type="button" data-motion-toggle>禁用动画</button>
+    <span class="map-tip">拖动、横向滚轮或触控滑动探索村落</span>
+  </div>
+
+  <div class="village-viewport" data-map-viewport tabindex="0" aria-label="可横向探索的徽州村落地图">
+    <div
+      class="village-world"
+      style={`--map-width:${mapConfig.width}px;--map-height:${mapConfig.height}px`}
+      data-map-world
+    >
+      <MapLayer name="sky"><DayNightOverlay /></MapLayer>
+      <MapLayer name="clouds">
+        <span class="cloud cloud-a"></span><span class="cloud cloud-b"></span><span class="cloud cloud-c"></span>
+      </MapLayer>
+      <MapLayer name="mountains">
+        <span class="mountain m1"></span><span class="mountain m2"></span><span class="mountain m3"></span>
+      </MapLayer>
+      <MapLayer name="far-buildings">
+        <span class="far-house h1"></span><span class="far-house h2"></span><span class="far-house h3"></span>
+      </MapLayer>
+      <MapLayer name="road">
+        <span class="stone-road"></span><span class="stone-bridge"></span>
+      </MapLayer>
+      <MapLayer name="water">
+        <span class="water-channel"></span><span class="lotus l1">✿</span><span class="lotus l2">✿</span>
+      </MapLayer>
+      <MapLayer name="plants">
+        <span class="tree t1"></span><span class="tree t2"></span><span class="tree t3"></span>
+        <span class="lantern la1"></span><span class="lantern la2"></span>
+      </MapLayer>
+      <MapLayer name="buildings" ariaHidden={false}>
+        {mapConfig.buildings.map((building) => (
+          <MapBuilding
+            building={building}
+            alert={building.id === "manage" && !hasCurrentWeek}
+            active={building.id === "academy" && hasCurrentWeek}
+          />
+        ))}
+      </MapLayer>
+      <MapLayer name="characters" ariaHidden={false}>
+        <PlayerAvatar profile={profile} weeklyCount={currentItems.length} />
+        {activeProjects.map((project, index) => {
+          const creature = creatures.find((item) => item.id === project.creatureId && item.enabled);
+          const position = creaturePositions[index];
+          if (!creature || !position) return null;
+          const projectItems = items.filter((item) => item.status === "published" && item.projects.includes(project.name));
+          const latest = projectItems.sort((a, b) => b.date.localeCompare(a.date))[0];
+          return (
+            <MapCreature
+              project={project}
+              creature={creature}
+              count={projectItems.length}
+              latestWeek={latest ? `${latest.weekYear} 年第 ${latest.week} 周` : undefined}
+              x={position[0]}
+              y={position[1]}
+            />
+          );
+        })}
+      </MapLayer>
+      <MapLayer name="hotspots" ariaHidden={false}>
+        <a class="notice-calendar" href={withBase("/calendar/")} aria-label="打开完整日历">
+          <span class="mono">{new Date().getMonth() + 1}月</span>
+          <strong>{currentItems.length}</strong>
+          <small>本周事项</small>
+        </a>
+      </MapLayer>
+      <SeasonOverlay />
+      <MapLayer name="foreground">
+        <span class="foreground-wall"></span>
+      </MapLayer>
+    </div>
+  </div>
+
+  <noscript>
+    <div class="site-shell pixel-window">
+      地图拖动需要 JavaScript，但所有建筑入口都可以直接通过顶部导航访问。
+    </div>
+  </noscript>
+</section>
+
+<script>
+  const viewport = document.querySelector<HTMLElement>("[data-map-viewport]");
+  const returnButton = document.querySelector<HTMLButtonElement>("[data-return-gate]");
+  const backButton = document.querySelector<HTMLButtonElement>("[data-map-back]");
+  const motionButton = document.querySelector<HTMLButtonElement>("[data-motion-toggle]");
+  let dragStartX = 0;
+  let dragStartScroll = 0;
+  let dragging = false;
+  let previousRegion = 0;
+
+  viewport?.addEventListener("pointerdown", (event) => {
+    dragStartX = event.clientX;
+    dragStartScroll = viewport.scrollLeft;
+    previousRegion = viewport.scrollLeft;
+    dragging = true;
+    viewport.setPointerCapture(event.pointerId);
+  });
+
+  viewport?.addEventListener("pointermove", (event) => {
+    if (!dragging) return;
+    const distance = event.clientX - dragStartX;
+    if (Math.abs(distance) > 4) viewport.dataset.dragging = "true";
+    viewport.scrollLeft = dragStartScroll - distance;
+  });
+
+  const stopDragging = () => {
+    dragging = false;
+    window.setTimeout(() => delete viewport?.dataset.dragging, 0);
+  };
+  viewport?.addEventListener("pointerup", stopDragging);
+  viewport?.addEventListener("pointercancel", stopDragging);
+  viewport?.addEventListener("wheel", (event) => {
+    if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+      event.preventDefault();
+      previousRegion = viewport.scrollLeft;
+      viewport.scrollLeft += event.deltaY;
+    }
+  }, { passive: false });
+
+  viewport?.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowRight") viewport.scrollBy({ left: 220, behavior: "smooth" });
+    if (event.key === "ArrowLeft") viewport.scrollBy({ left: -220, behavior: "smooth" });
+    if (event.key === "Home") viewport.scrollTo({ left: 0, behavior: "smooth" });
+  });
+
+  returnButton?.addEventListener("click", () => viewport?.scrollTo({ left: 0, behavior: "smooth" }));
+  backButton?.addEventListener("click", () => viewport?.scrollTo({ left: previousRegion, behavior: "smooth" }));
+
+  motionButton?.addEventListener("click", () => {
+    const reduced = document.documentElement.dataset.motion !== "reduced";
+    if (reduced) document.documentElement.dataset.motion = "reduced";
+    else delete document.documentElement.dataset.motion;
+    localStorage.setItem("huizhou-motion", reduced ? "reduced" : "full");
+    motionButton.textContent = reduced ? "启用动画" : "禁用动画";
+  });
+
+  document.querySelectorAll<HTMLElement>("[data-building-link]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      if (viewport?.dataset.dragging === "true") {
+        event.preventDefault();
+        return;
+      }
+      if (window.matchMedia("(max-width: 900px)").matches && !link.classList.contains("is-selected")) {
+        event.preventDefault();
+        document.querySelectorAll(".map-building.is-selected").forEach((item) => item.classList.remove("is-selected"));
+        link.classList.add("is-selected");
+      }
+    });
+  });
+
+  document.querySelectorAll<HTMLElement>("[data-dialog-open]").forEach((trigger) => {
+    trigger.addEventListener("click", () => {
+      const id = trigger.dataset.dialogOpen;
+      const dialog = id ? document.getElementById(id) : null;
+      if (dialog instanceof HTMLDialogElement) dialog.showModal();
+    });
+  });
+
+  document.querySelectorAll<HTMLDialogElement>("dialog.character-dialog").forEach((dialog) => {
+    dialog.querySelector("[data-dialog-close]")?.addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+  });
+</script>
+
+<style>
+  .village-section {
+    overflow: hidden;
+    padding-top: 2.2rem;
+    background: linear-gradient(var(--paper), color-mix(in srgb, var(--sky) 14%, var(--paper)));
+  }
+
+  .map-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 2rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .week-status {
+    display: flex;
+    min-width: 270px;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1rem;
+    border: 4px solid var(--tile);
+    background: var(--wall);
+    box-shadow: 5px 5px 0 var(--tile);
+  }
+
+  .week-status > span {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    color: #fff;
+    background: var(--red);
+    font-size: 1.4rem;
+    font-weight: 900;
+  }
+
+  .week-status.has-records > span {
+    color: var(--tile);
+    background: var(--yellow);
+  }
+
+  .week-status div,
+  .week-status small {
+    display: grid;
+  }
+
+  .week-status small {
+    margin-top: 0.2rem;
+    color: var(--muted);
+  }
+
+  .map-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .map-tip {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+
+  .village-viewport {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-block: 5px solid var(--tile);
+    cursor: grab;
+    overscroll-behavior-inline: contain;
+    scrollbar-color: var(--wood) var(--wall);
+    touch-action: pan-x;
+  }
+
+  .village-viewport:active {
+    cursor: grabbing;
+  }
+
+  .village-world {
+    position: relative;
+    width: var(--map-width);
+    height: var(--map-height);
+    overflow: hidden;
+    background: var(--sky);
+    user-select: none;
+  }
+
+  .map-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .layer-buildings,
+  .layer-characters,
+  .layer-hotspots {
+    pointer-events: auto;
+  }
+
+  .layer-sky {
+    background: linear-gradient(#65c8f3 0 58%, #8edab5 58% 100%);
+  }
+
+  :global(:root[data-theme="night"]) .layer-sky {
+    background: linear-gradient(#172c4d 0 58%, #25495a 58% 100%);
+  }
+
+  .cloud {
+    position: absolute;
+    width: 150px;
+    height: 34px;
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 32px -22px 0 rgba(255, 255, 255, 0.82), 77px -10px 0 rgba(255, 255, 255, 0.82);
+    animation: cloud-drift 24s linear infinite;
+  }
+
+  .cloud-a { left: 180px; top: 105px; }
+  .cloud-b { left: 980px; top: 75px; animation-delay: -9s; }
+  .cloud-c { left: 1720px; top: 125px; animation-delay: -17s; }
+
+  .mountain {
+    position: absolute;
+    bottom: 260px;
+    width: 520px;
+    height: 260px;
+    background: #4c9674;
+    clip-path: polygon(0 100%, 18% 55%, 28% 72%, 50% 18%, 66% 60%, 78% 43%, 100% 100%);
+    opacity: 0.82;
+  }
+  .m1 { left: -40px; }
+  .m2 { left: 680px; transform: scale(1.2); opacity: 0.62; }
+  .m3 { left: 1520px; opacity: 0.75; }
+
+  .far-house {
+    position: absolute;
+    bottom: 230px;
+    width: 150px;
+    height: 95px;
+    border: 4px solid rgba(38, 55, 70, 0.65);
+    background: rgba(255, 246, 223, 0.82);
+  }
+  .far-house::before {
+    position: absolute;
+    right: -10px;
+    left: -10px;
+    top: -22px;
+    height: 25px;
+    content: "";
+    background: #344653;
+    clip-path: polygon(0 65%, 45% 65%, 50% 0, 55% 65%, 100% 65%, 95% 100%, 5% 100%);
+  }
+  .h1 { left: 300px; }
+  .h2 { left: 890px; bottom: 250px; }
+  .h3 { left: 1810px; }
+
+  .stone-road {
+    position: absolute;
+    left: 0;
+    bottom: 90px;
+    width: 2200px;
+    height: 115px;
+    border-block: 5px solid #6d7a82;
+    background:
+      linear-gradient(100deg, transparent 30%, rgba(78, 91, 99, 0.28) 31% 34%, transparent 35%),
+      repeating-linear-gradient(90deg, #9aa5aa 0 70px, #849097 70px 75px);
+  }
+
+  .stone-bridge {
+    position: absolute;
+    z-index: 3;
+    left: 860px;
+    bottom: 112px;
+    width: 270px;
+    height: 80px;
+    border: 8px solid #6a777f;
+    border-bottom: 0;
+    border-radius: 50% 50% 0 0;
+    background: #aab3b5;
+  }
+
+  .water-channel {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 105px;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 15px, rgba(255, 255, 255, 0.22) 16px 19px, transparent 20px 30px),
+      var(--water);
+    animation: water-shift 4s steps(3, jump-none) infinite;
+  }
+
+  .lotus {
+    position: absolute;
+    bottom: 43px;
+    color: #ff92ad;
+    font-size: 34px;
+  }
+  .l1 { left: 1420px; }
+  .l2 { left: 1510px; font-size: 26px; }
+
+  .tree {
+    position: absolute;
+    bottom: 185px;
+    width: 70px;
+    height: 140px;
+    border-bottom: 55px solid var(--wood);
+  }
+  .tree::before {
+    position: absolute;
+    left: -36px;
+    top: -12px;
+    width: 130px;
+    height: 90px;
+    content: "";
+    background: var(--grass);
+    clip-path: polygon(20% 100%, 0 55%, 24% 48%, 10% 15%, 42% 22%, 56% 0, 72% 25%, 100% 18%, 88% 55%, 100% 75%, 68% 78%, 60% 100%);
+  }
+  .t1 { left: 285px; }
+  .t2 { left: 730px; transform: scale(0.8); }
+  .t3 { left: 1870px; transform: scale(0.9); }
+
+  .lantern {
+    position: absolute;
+    z-index: 9;
+    bottom: 226px;
+    width: 24px;
+    height: 35px;
+    border: 3px solid #8e372f;
+    background: var(--red);
+    box-shadow: 0 0 12px rgba(255, 212, 90, 0.48);
+    transform-origin: top center;
+    animation: lantern-sway 3s steps(3, jump-none) infinite;
+  }
+  .la1 { left: 810px; }
+  .la2 { left: 1580px; animation-delay: -1.5s; }
+
+  .notice-calendar {
+    position: absolute;
+    z-index: 8;
+    left: 848px;
+    top: 495px;
+    display: grid;
+    width: 72px;
+    height: 76px;
+    place-items: center;
+    border: 3px solid var(--wood-dark);
+    color: var(--ink);
+    background: var(--wall);
+    font-size: 0.72rem;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .notice-calendar strong { font-size: 1.45rem; color: var(--red); }
+  .notice-calendar small { font-size: 0.62rem; }
+
+  .foreground-wall {
+    position: absolute;
+    right: -20px;
+    bottom: 95px;
+    width: 95px;
+    height: 260px;
+    border: 5px solid var(--tile);
+    background: var(--wall);
+  }
+
+  @keyframes cloud-drift { to { translate: 150px 0; } }
+  @keyframes water-shift { 50% { background-position: 18px 8px; } }
+  @keyframes lantern-sway { 50% { rotate: 3deg; } }
+
+  @media (max-width: 900px) {
+    .map-intro {
+      grid-template-columns: 1fr;
+    }
+    .map-toolbar {
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+    .map-toolbar > * {
+      flex: 0 0 auto;
+    }
+    .map-tip {
+      display: none;
+    }
+    .village-viewport {
+      min-height: 520px;
+    }
+    .village-world {
+      transform-origin: top left;
+    }
+  }
+</style>

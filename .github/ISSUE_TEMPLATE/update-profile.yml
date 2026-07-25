@@ -1,0 +1,48 @@
+name: 更新个人资料
+description: 更新网站名称、头像、站位和外部链接
+title: "[个人资料] "
+labels: ["profile:update"]
+body:
+  - type: input
+    id: site-title
+    attributes:
+      label: 网站名称
+  - type: input
+    id: name
+    attributes:
+      label: 昵称
+  - type: textarea
+    id: description
+    attributes:
+      label: 简介
+  - type: textarea
+    id: avatar
+    attributes:
+      label: 像素头像
+      description: 上传 PNG、WebP、GIF 或动画 WebP；不允许 SVG。
+  - type: dropdown
+    id: position
+    attributes:
+      label: 地图站位
+      options:
+        - _未填写_
+        - village-gate
+        - waterside-courtyard
+        - academy-door
+        - stone-bridge
+        - lotus-pond
+  - type: dropdown
+    id: scale
+    attributes:
+      label: 头像缩放倍数
+      options: [_未填写_, "1", "2", "3", "4"]
+  - type: dropdown
+    id: show-name
+    attributes:
+      label: 是否显示昵称
+      options: ["是", "否"]
+  - type: textarea
+    id: links
+    attributes:
+      label: 外部链接
+      description: 每行使用“名称 | https://example.com”格式。

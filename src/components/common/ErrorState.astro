@@ -1,0 +1,12 @@
+---
+interface Props {
+  message?: string;
+}
+
+const { message = "内容加载失败，请稍后再试。" } = Astro.props;
+---
+
+<div class="error-state" role="alert">
+  <strong>出了一点岔子</strong>
+  <p>{message}</p>
+</div>

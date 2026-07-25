@@ -1,0 +1,16 @@
+<script>
+  import PhotoSwipeLightbox from "photoswipe/lightbox";
+
+  document.querySelectorAll<HTMLElement>("[data-pswp-gallery]").forEach((gallery) => {
+    if (gallery.dataset.lightboxReady === "true") return;
+    gallery.dataset.lightboxReady = "true";
+    const lightbox = new PhotoSwipeLightbox({
+      gallery,
+      children: "a",
+      pswpModule: () => import("photoswipe"),
+      wheelToZoom: true,
+      showHideAnimationType: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "none" : "fade"
+    });
+    lightbox.init();
+  });
+</script>

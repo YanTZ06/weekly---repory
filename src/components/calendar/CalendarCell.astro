@@ -1,0 +1,47 @@
+---
+import type { ReportItem } from "@/types/content";
+import { getISOWeekInfo } from "@/utils/date";
+import { withBase } from "@/utils/paths";
+import CalendarIconDisplay from "@/components/reports/CalendarIconDisplay.astro";
+
+interface Props {
+  date: Date;
+  displayMonth: number;
+  items: ReportItem[];
+  today: string;
+}
+
+const { date, displayMonth, items, today } = Astro.props;
+const dateString = [
+  date.getFullYear(),
+  String(date.getMonth() + 1).padStart(2, "0"),
+  String(date.getDate()).padStart(2, "0")
+].join("-");
+const dayItems = items
+  .filter((item) => item.status === "published" && item.date === dateString)
+  .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+const latestItem = dayItems.at(-1);
+const iso = getISOWeekInfo(dateString);
+const inMonth = date.getMonth() === displayMonth;
+---
+
+<div
+  class:list={["calendar-cell", !inMonth && "outside-month", dateString === today && "is-today", dayItems.length > 0 && "has-items"]}
+  data-date={dateString}
+>
+  {dayItems.length > 0 ? (
+    <a href={withBase(`/reports/${iso.weekYear}/${iso.week}/`)} aria-label={`${dateString}，${dayItems.length} 条事项，查看第 ${iso.week} 周周报`}>
+      <span class="calendar-date">{date.getDate()}</span>
+      <span class="calendar-ball">
+        {latestItem && <CalendarIconDisplay id={latestItem.calendarIcon} size={32} />}
+      </span>
+      <span class="calendar-count">×{dayItems.length}</span>
+    </a>
+  ) : (
+    <span aria-label={`${dateString}，无事项`}>
+      <span class="calendar-date">{date.getDate()}</span>
+      <span class="calendar-ball" aria-hidden="true">·</span>
+      <span class="calendar-count">无记录</span>
+    </span>
+  )}
+</div>

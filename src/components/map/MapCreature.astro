@@ -1,0 +1,110 @@
+---
+import type { Creature, Project } from "@/types/content";
+import CharacterDialog from "./CharacterDialog.astro";
+import { assetUrl, withBase } from "@/utils/paths";
+
+interface Props {
+  project: Project;
+  creature: Creature;
+  count: number;
+  latestWeek?: string;
+  x: number;
+  y: number;
+}
+
+const { project, creature, count, latestWeek = "暂无记录", x, y } = Astro.props;
+const dialogId = `creature-${project.slug}`;
+---
+
+<button
+  class="map-creature"
+  type="button"
+  style={`--x:${x}px;--y:${y}px`}
+  data-dialog-open={dialogId}
+  aria-label={`${creature.name}，代表项目 ${project.name}`}
+>
+  <span class="creature-shadow" aria-hidden="true"></span>
+  <img class="pixel-art" src={assetUrl(creature.sprite)} width="64" height="64" alt={creature.name} loading="lazy" />
+  <span class="creature-name">{creature.name}</span>
+</button>
+
+<CharacterDialog id={dialogId} title={creature.name}>
+  <div class="creature-dialog-grid">
+    <img class="pixel-art" src={assetUrl(creature.largeSprite)} width="128" height="128" alt={creature.name} />
+    <div>
+      <p><strong>项目：</strong>{project.name}</p>
+      <p><strong>关联记录：</strong>{count} 条</p>
+      <p><strong>最近更新：</strong>{latestWeek}</p>
+      <a class="pixel-button" href={withBase(`/projects/${project.slug}/`)}>查看项目记录</a>
+    </div>
+  </div>
+</CharacterDialog>
+
+<style>
+  .map-creature {
+    position: absolute;
+    z-index: 6;
+    left: var(--x);
+    top: var(--y);
+    width: 78px;
+    height: 86px;
+    padding: 0;
+    border: 0;
+    color: var(--ink);
+    background: transparent;
+    cursor: pointer;
+    animation: creature-idle 2.1s steps(2, jump-none) infinite;
+  }
+
+  .map-creature img {
+    position: relative;
+    z-index: 2;
+    width: 64px;
+    height: 64px;
+  }
+
+  .creature-shadow {
+    position: absolute;
+    z-index: 1;
+    left: 16px;
+    bottom: 21px;
+    width: 48px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(38, 55, 70, 0.3);
+  }
+
+  .creature-name {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    padding: 2px 5px;
+    border: 2px solid var(--tile);
+    background: var(--paper);
+    font-size: 0.7rem;
+    font-weight: 800;
+    white-space: nowrap;
+    translate: -50% 0;
+  }
+
+  .creature-dialog-grid {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  @keyframes creature-idle {
+    50% { translate: 0 -3px; }
+  }
+
+  @media (max-width: 520px) {
+    .creature-dialog-grid {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+    .creature-dialog-grid img {
+      margin: auto;
+    }
+  }
+</style>

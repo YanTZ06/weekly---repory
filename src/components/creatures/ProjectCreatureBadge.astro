@@ -1,0 +1,22 @@
+---
+import projects from "@/data/projects.json";
+import creatures from "@/data/creatures.json";
+import { assetUrl, withBase } from "@/utils/paths";
+
+interface Props {
+  projectName: string;
+}
+
+const { projectName } = Astro.props;
+const project = projects.find((item) => item.name === projectName);
+const creature = project ? creatures.find((item) => item.id === project.creatureId && item.enabled) : undefined;
+---
+
+{project ? (
+  <a class="project-badge" href={withBase(`/projects/${project.slug}/`)}>
+    {creature && <img class="pixel-art" src={assetUrl(creature.sprite)} width="32" height="32" alt="" loading="lazy" />}
+    <span>{project.name}</span>
+  </a>
+) : (
+  <span class="project-badge">{projectName}</span>
+)}

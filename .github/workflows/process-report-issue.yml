@@ -1,0 +1,59 @@
+name: Process report issue
+
+on:
+  issues:
+    types: [opened, labeled]
+
+concurrency:
+  group: content-management-${{ github.repository }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  process:
+    if: >-
+      contains(github.event.issue.labels.*.name, 'report:add') ||
+      contains(github.event.issue.labels.*.name, 'report:update') ||
+      contains(github.event.issue.labels.*.name, 'report:status') ||
+      startsWith(github.event.issue.title, '[新增事项]') ||
+      startsWith(github.event.issue.title, '[修改事项]') ||
+      startsWith(github.event.issue.title, '[状态管理]')
+    runs-on: ubuntu-latest
+    env:
+      OWNER_LOGIN: ${{ vars.OWNER_LOGIN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - id: process
+        run: pnpm exec tsx scripts/process-report-issue.ts
+      - if: steps.process.outputs.skip != 'true'
+        run: pnpm run test
+      - if: steps.process.outputs.skip != 'true'
+        run: pnpm run validate:content
+      - name: Commit validated change
+        if: steps.process.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/content public/assets/reports
+          git diff --cached --quiet || git commit -m "content: process report issue #${{ github.event.issue.number }}"
+          git push
+      - name: Confirm success and close issue
+        if: steps.process.outputs.skip != 'true'
+        env:
+          PROCESS_KIND: report
+          PROCESS_RESULT: ${{ steps.process.outputs.result_id }}
+        run: pnpm exec tsx scripts/finalize-issue.ts

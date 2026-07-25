@@ -1,0 +1,104 @@
+---
+import type { WeeklyReport } from "@/types/content";
+import { withBase } from "@/utils/paths";
+import ProjectCreatureBadge from "@/components/creatures/ProjectCreatureBadge.astro";
+import TagBadge from "@/components/common/TagBadge.astro";
+import tagsData from "@/data/tags.json";
+import type { Tag } from "@/types/content";
+
+interface Props {
+  report: WeeklyReport;
+}
+
+const { report } = Astro.props;
+const tags = tagsData as Tag[];
+---
+
+<article class="weekly-card">
+  <a class="weekly-card-main" href={withBase(`/reports/${report.weekYear}/${report.week}/`)}>
+    <span class="weekly-number mono">W{String(report.week).padStart(2, "0")}</span>
+    <div>
+      <h3>{report.weekYear} 年第 {report.week} 周</h3>
+      <p>{report.startDate} — {report.endDate} · {report.items.length} 条事项</p>
+    </div>
+    <span class="weekly-arrow" aria-hidden="true">→</span>
+  </a>
+  <div class="weekly-card-meta">
+    <div class="badge-row">
+      {report.projects.map((project) => <ProjectCreatureBadge projectName={project} />)}
+      {report.tags.slice(0, 4).map((name) => {
+        const tag = tags.find((candidate) => candidate.name === name);
+        return tag && <TagBadge tag={tag} />;
+      })}
+    </div>
+  </div>
+</article>
+
+<style>
+  .weekly-card {
+    position: relative;
+    overflow: hidden;
+    border: 4px solid var(--tile);
+    background: var(--white);
+    box-shadow: 7px 7px 0 var(--shadow);
+  }
+
+  .weekly-card::before {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 10px;
+    content: "";
+    background: repeating-linear-gradient(var(--red) 0 14px, var(--yellow) 14px 28px);
+  }
+
+  .weekly-card-main {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.1rem 1.2rem 0.8rem 1.7rem;
+    text-decoration: none;
+  }
+
+  .weekly-card-main h3,
+  .weekly-card-main p {
+    margin: 0;
+  }
+
+  .weekly-card-main p {
+    margin-top: 0.3rem;
+    color: var(--muted);
+  }
+
+  .weekly-number {
+    display: grid;
+    width: 62px;
+    height: 62px;
+    place-items: center;
+    border: 3px solid var(--tile);
+    background: var(--yellow);
+    font-weight: 950;
+  }
+
+  .weekly-arrow {
+    font-size: 1.7rem;
+    transition: translate 120ms ease;
+  }
+
+  .weekly-card-main:hover .weekly-arrow {
+    translate: 5px 0;
+  }
+
+  .weekly-card-meta {
+    padding: 0.75rem 1.2rem 1rem 1.7rem;
+    border-top: 2px dashed color-mix(in srgb, var(--wood) 35%, transparent);
+  }
+
+  @media (max-width: 600px) {
+    .weekly-card-main {
+      grid-template-columns: auto 1fr;
+    }
+    .weekly-arrow { display: none; }
+    .weekly-number { width: 52px; height: 52px; }
+  }
+</style>

@@ -1,0 +1,92 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ExternalLinks from "@/components/common/ExternalLinks.astro";
+import WeeklyReportCard from "@/components/reports/WeeklyReportCard.astro";
+import profileData from "@/data/profile.json";
+import type { Profile } from "@/types/config";
+import { assetUrl, withBase } from "@/utils/paths";
+import { loadReportItems } from "@/utils/content";
+import { aggregateWeeklyReports } from "@/utils/reports";
+
+const profile = profileData as Profile;
+const recent = aggregateWeeklyReports(await loadReportItems())[0];
+---
+
+<BaseLayout title="关于村落主人" description={profile.description}>
+  <div class="content-page">
+    <section class="about-courtyard">
+      <div class="courtyard-water" aria-hidden="true"></div>
+      <div class="about-avatar">
+        <span class="avatar-shadow" aria-hidden="true"></span>
+        <img class="pixel-art" src={assetUrl(profile.avatar.path)} width="128" height="128" alt={`${profile.name} 的像素头像`} />
+      </div>
+      <div class="about-copy">
+        <p class="eyebrow">临水小院 · 村落主人</p>
+        <h1>{profile.name}</h1>
+        <p class="lede">{profile.description}</p>
+        <ExternalLinks links={profile.links} />
+        <a class="pixel-button secondary" href={withBase("/")}>← 返回村落地图</a>
+      </div>
+    </section>
+
+    {recent && (
+      <section class="recent-report" aria-labelledby="recent-title">
+        <h2 id="recent-title">最近记录</h2>
+        <WeeklyReportCard report={recent} />
+      </section>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .about-courtyard {
+    position: relative;
+    display: grid;
+    grid-template-columns: 230px 1fr;
+    align-items: center;
+    gap: 2rem;
+    overflow: hidden;
+    padding: 2rem;
+    border: 6px solid var(--tile);
+    background: var(--wall);
+    box-shadow: 10px 10px 0 var(--shadow);
+  }
+  .about-courtyard::before {
+    position: absolute;
+    right: 0;
+    left: 0;
+    top: 0;
+    height: 30px;
+    content: "";
+    background: repeating-linear-gradient(90deg, var(--tile) 0 28px, #445867 28px 35px);
+  }
+  .courtyard-water {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 32px;
+    background: var(--water);
+  }
+  .about-avatar {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    width: 200px;
+    height: 200px;
+    place-items: center;
+    border: 5px solid var(--wood-dark);
+    background: color-mix(in srgb, var(--sky) 45%, var(--paper));
+  }
+  .about-avatar img { position: relative; z-index: 2; width: 128px; height: 128px; }
+  .avatar-shadow { position: absolute; left: 48px; right: 48px; bottom: 32px; height: 18px; border-radius: 50%; background: rgba(38,55,70,.25); }
+  .about-copy { position: relative; z-index: 2; }
+  .about-copy h1 { margin-bottom: 0; }
+  .about-copy :global(.external-links) { margin: 1.2rem 0; }
+  .recent-report { margin-top: 2.5rem; }
+  @media (max-width: 680px) {
+    .about-courtyard { grid-template-columns: 1fr; text-align: center; }
+    .about-avatar { margin: auto; }
+    .about-copy :global(.external-links) { justify-content: center; }
+  }
+</style>

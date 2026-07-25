@@ -1,0 +1,24 @@
+{
+  "name": "yantz",
+  "siteTitle": "徽州灵兽周记",
+  "description": "记录为科协、为自己以及为其他事情付出的每一周。",
+  "avatar": {
+    "path": "/assets/profile/avatar-64.png",
+    "animated": false,
+    "nativeWidth": 64,
+    "nativeHeight": 64,
+    "mapScale": 2,
+    "mapPosition": "village-gate",
+    "showName": true
+  },
+  "links": [
+    {
+      "id": "github",
+      "name": "GitHub",
+      "url": "https://github.com/YanTZ06",
+      "icon": "github",
+      "visible": true,
+      "order": 1
+    }
+  ]
+}

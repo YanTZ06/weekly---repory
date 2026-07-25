@@ -1,0 +1,46 @@
+---
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import TagBadge from "@/components/common/TagBadge.astro";
+import ReportItem from "@/components/reports/ReportItem.astro";
+import EmptyState from "@/components/common/EmptyState.astro";
+import tagsData from "@/data/tags.json";
+import type { Tag, ReportItem as ReportItemData } from "@/types/content";
+import { loadReportItems } from "@/utils/content";
+
+export const getStaticPaths = (async () => {
+  const tags = tagsData as Tag[];
+  const items = await loadReportItems();
+  return tags.map((tag) => ({
+    params: { slug: tag.slug },
+    props: {
+      tag,
+      related: items
+        .filter((item) => item.status === "published" && item.tags.includes(tag.name))
+        .sort((a, b) => b.date.localeCompare(a.date))
+    }
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  tag: Tag;
+  related: ReportItemData[];
+}
+const { tag, related } = Astro.props;
+---
+
+<BaseLayout title={`标签：${tag.name}`} description={`${tag.name} 标签下的周报事项`}>
+  <div class="content-page">
+    <header class="page-hero">
+      <div>
+        <p class="eyebrow">百宝阁 · 标签抽屉</p>
+        <h1>{tag.name}</h1>
+        <p class="lede">共 {related.length} 条公开事项，按日期倒序排列。</p>
+      </div>
+      <TagBadge tag={tag} linked={false} />
+    </header>
+    <section aria-label={`${tag.name} 相关事项`}>
+      {related.length > 0 ? related.map((item) => <ReportItem item={item} />) : <EmptyState />}
+    </section>
+  </div>
+</BaseLayout>

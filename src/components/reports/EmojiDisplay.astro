@@ -1,0 +1,32 @@
+---
+import emojis from "@/data/emojis.json";
+import type { ReportEmoji } from "@/types/content";
+import { assetUrl } from "@/utils/paths";
+
+interface Props {
+  emoji: ReportEmoji;
+}
+
+const { emoji } = Astro.props;
+const custom = emoji.type === "custom" ? emojis.find((item) => item.id === emoji.value && item.enabled) : undefined;
+---
+
+{emoji.type === "unicode" ? (
+  <span class="emoji-display" role="img" aria-label="事项表情">{emoji.value}</span>
+) : custom ? (
+  <img class="emoji-image pixel-art" src={assetUrl(custom.path)} width="24" height="24" alt={custom.name} />
+) : (
+  <span class="emoji-display" aria-label="未找到的自定义表情">◇</span>
+)}
+
+<style>
+  .emoji-display {
+    display: inline-grid;
+    min-width: 30px;
+    place-items: center;
+    font-size: 1.25rem;
+  }
+  .emoji-image {
+    object-fit: contain;
+  }
+</style>

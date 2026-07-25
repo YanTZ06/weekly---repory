@@ -1,0 +1,96 @@
+---
+import SearchResults from "./SearchResults.astro";
+---
+
+<div class="search-box pixel-window" data-search-root data-base={import.meta.env.BASE_URL}>
+  <label for="archive-search">在藏书楼中搜索</label>
+  <div class="search-input-row">
+    <input id="archive-search" type="search" placeholder="例如：后端、W30、2026-07-25" autocomplete="off" data-search-input />
+    <button class="pixel-button" type="button" data-search-submit>搜索</button>
+  </div>
+  <SearchResults />
+</div>
+
+<script>
+  interface PagefindResult {
+    id: string;
+    data: () => Promise<{
+      url: string;
+      meta: { title?: string };
+      excerpt: string;
+    }>;
+  }
+
+  interface PagefindApi {
+    search: (query: string) => Promise<{ results: PagefindResult[] }>;
+  }
+
+  const root = document.querySelector<HTMLElement>("[data-search-root]");
+  const input = root?.querySelector<HTMLInputElement>("[data-search-input]");
+  const submit = root?.querySelector<HTMLButtonElement>("[data-search-submit]");
+  const results = root?.querySelector<HTMLElement>("[data-search-results]");
+  let pagefind: PagefindApi | null = null;
+
+  const escapeText = (value: string) =>
+    value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+  const safeExcerpt = (value: string) =>
+    escapeText(value)
+      .replaceAll("&lt;mark&gt;", "<mark>")
+      .replaceAll("&lt;/mark&gt;", "</mark>");
+
+  const runSearch = async () => {
+    const query = input?.value.trim() ?? "";
+    if (!results || !query) return;
+    results.innerHTML = "<p>正在翻找档案……</p>";
+    try {
+      if (!pagefind) {
+        const base = root?.dataset.base === "/" ? "/" : root?.dataset.base ?? "/";
+        pagefind = (await import(/* @vite-ignore */ `${base}pagefind/pagefind.js`)) as PagefindApi;
+        await (pagefind as PagefindApi & { init?: () => Promise<void> }).init?.();
+      }
+      const response = await pagefind.search(query);
+      const detailed = await Promise.all(response.results.slice(0, 20).map((result) => result.data()));
+      if (detailed.length === 0) {
+        results.innerHTML = "<p>没有找到相关档案。</p>";
+        return;
+      }
+      results.innerHTML = detailed.map((item) => `
+        <article class="search-result">
+          <h2><a href="${escapeText(item.url)}">${escapeText(item.meta.title ?? "未命名档案")}</a></h2>
+          <p>${safeExcerpt(item.excerpt)}</p>
+        </article>
+      `).join("");
+    } catch {
+      results.innerHTML = "<p>本地开发模式还没有生成搜索索引。请先运行构建命令，或在部署站点上使用搜索。</p>";
+    }
+  };
+
+  submit?.addEventListener("click", runSearch);
+  input?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") runSearch();
+  });
+</script>
+
+<style>
+  .search-box > label {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-weight: 900;
+  }
+  .search-input-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.7rem;
+  }
+  .search-input-row input {
+    min-width: 0;
+    min-height: 48px;
+    padding: 0.7rem 0.85rem;
+    border: 4px solid var(--tile);
+    color: var(--ink);
+    background: var(--paper);
+  }
+  @media (max-width: 520px) {
+    .search-input-row { grid-template-columns: 1fr; }
+  }
+</style>

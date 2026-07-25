@@ -1,0 +1,31 @@
+---
+import { withBase } from "@/utils/paths";
+
+const links = [
+  { href: "/", label: "村落地图", short: "地图" },
+  { href: "/reports/", label: "周报", short: "周报" },
+  { href: "/calendar/", label: "日历", short: "日历" },
+  { href: "/projects/", label: "项目图鉴", short: "项目" },
+  { href: "/tags/", label: "标签", short: "标签" },
+  { href: "/search/", label: "搜索", short: "搜索" },
+  { href: "/about/", label: "关于", short: "关于" }
+];
+
+const currentPath = Astro.url.pathname;
+const isCurrent = (href: string) => {
+  const normalized = withBase(href);
+  return href === "/" ? currentPath === normalized : currentPath.startsWith(normalized);
+};
+---
+
+<nav class="quick-nav" aria-label="快速导航">
+  {links.map((link) => (
+    <a href={withBase(link.href)} aria-current={isCurrent(link.href) ? "page" : undefined}>{link.label}</a>
+  ))}
+</nav>
+
+<nav class="mobile-nav" aria-label="移动端导航">
+  {links.slice(0, 5).map((link) => (
+    <a href={withBase(link.href)} aria-current={isCurrent(link.href) ? "page" : undefined}>{link.short}</a>
+  ))}
+</nav>

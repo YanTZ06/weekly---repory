@@ -1,0 +1,25 @@
+---
+import icons from "@/data/calendar-icons.json";
+import { assetUrl } from "@/utils/paths";
+
+interface Props {
+  id: string;
+  size?: number;
+}
+
+const { id, size = 32 } = Astro.props;
+const icon = icons.find((item) => item.id === id && item.enabled);
+---
+
+{icon ? (
+  <img
+    class="calendar-icon pixel-art"
+    src={assetUrl(icon.path)}
+    width={size}
+    height={size}
+    alt={icon.name}
+    loading="lazy"
+  />
+) : (
+  <span aria-label="未知记录球">●</span>
+)}

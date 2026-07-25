@@ -1,0 +1,204 @@
+---
+import type { MapBuildingConfig } from "@/types/config";
+import BuildingTooltip from "./BuildingTooltip.astro";
+import { withBase } from "@/utils/paths";
+
+interface Props {
+  building: MapBuildingConfig;
+  alert?: boolean;
+  active?: boolean;
+}
+
+const { building, alert = false, active = false } = Astro.props;
+---
+
+<a
+  class:list={["map-building", `building-${building.kind}`, active && "is-active"]}
+  href={withBase(building.href)}
+  style={`--x:${building.x}px;--y:${building.y}px;--building-width:${building.width}px`}
+  aria-label={`${building.name}：${building.description}`}
+  data-building-link
+>
+  <span class="building-shape" aria-hidden="true">
+    <span class="horse-head left"></span>
+    <span class="horse-head right"></span>
+    <span class="roof"></span>
+    <span class="wall">
+      <span class="window left"></span>
+      <span class="door"></span>
+      <span class="window right"></span>
+    </span>
+    {active && <span class="window-glow"></span>}
+    {alert && <span class="building-alert">!</span>}
+  </span>
+  <BuildingTooltip name={building.name} description={building.description} />
+</a>
+
+<style>
+  .map-building {
+    position: absolute;
+    z-index: 3;
+    left: var(--x);
+    top: var(--y);
+    display: block;
+    width: var(--building-width);
+    height: 190px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .building-shape {
+    position: absolute;
+    inset: 0;
+    filter: drop-shadow(8px 10px 0 rgba(37, 55, 67, 0.18));
+  }
+
+  .wall {
+    position: absolute;
+    right: 7%;
+    bottom: 0;
+    left: 7%;
+    height: 116px;
+    border: 5px solid #344653;
+    border-top: 0;
+    background:
+      linear-gradient(90deg, transparent 48%, rgba(165, 103, 63, 0.12) 49% 51%, transparent 52%),
+      #fff6df;
+  }
+
+  .roof {
+    position: absolute;
+    z-index: 3;
+    right: 0;
+    bottom: 112px;
+    left: 0;
+    height: 34px;
+    border: 5px solid #1e303d;
+    background: repeating-linear-gradient(90deg, #263746 0 22px, #415464 22px 29px);
+    clip-path: polygon(4% 30%, 46% 30%, 50% 0, 54% 30%, 96% 30%, 100% 100%, 0 100%);
+  }
+
+  .horse-head {
+    position: absolute;
+    z-index: 2;
+    bottom: 116px;
+    width: 47px;
+    height: 70px;
+    border: 5px solid #344653;
+    background: #fff6df;
+  }
+
+  .horse-head.left {
+    left: 7%;
+    clip-path: polygon(0 30%, 35% 30%, 35% 12%, 70% 12%, 70% 0, 100% 0, 100% 100%, 0 100%);
+  }
+
+  .horse-head.right {
+    right: 7%;
+    clip-path: polygon(0 0, 30% 0, 30% 12%, 65% 12%, 65% 30%, 100% 30%, 100% 100%, 0 100%);
+  }
+
+  .door {
+    position: absolute;
+    left: calc(50% - 23px);
+    bottom: 0;
+    width: 46px;
+    height: 68px;
+    border: 5px solid #704329;
+    border-bottom: 0;
+    background: repeating-linear-gradient(90deg, #a5673f 0 10px, #8e5535 10px 14px);
+  }
+
+  .window {
+    position: absolute;
+    top: 34px;
+    width: 34px;
+    height: 38px;
+    border: 4px solid #704329;
+    background:
+      linear-gradient(90deg, transparent 44%, #704329 45% 55%, transparent 56%),
+      linear-gradient(transparent 44%, #704329 45% 55%, transparent 56%),
+      #80cee4;
+  }
+
+  .window.left {
+    left: 14%;
+  }
+
+  .window.right {
+    right: 14%;
+  }
+
+  .window-glow {
+    position: absolute;
+    z-index: 5;
+    left: 20%;
+    bottom: 47px;
+    width: 34px;
+    height: 38px;
+    background: rgba(255, 212, 90, 0.75);
+    box-shadow: 0 0 22px #ffd45a;
+  }
+
+  .building-alert {
+    position: absolute;
+    z-index: 8;
+    top: -12px;
+    right: 10px;
+    display: grid;
+    width: 36px;
+    height: 44px;
+    place-items: center;
+    border: 4px solid #fff6df;
+    color: white;
+    background: var(--red);
+    box-shadow: 3px 3px 0 var(--tile);
+    font: 900 1.5rem/1 ui-monospace, monospace;
+    animation: alert-hop 1.4s steps(2, jump-none) infinite;
+  }
+
+  .map-building:hover :global(.building-tooltip),
+  .map-building:focus-visible :global(.building-tooltip),
+  .map-building.is-selected :global(.building-tooltip) {
+    opacity: 1;
+    translate: -50% 0;
+  }
+
+  .map-building:hover .building-shape,
+  .map-building:focus-visible .building-shape {
+    translate: 0 -4px;
+  }
+
+  .building-gate {
+    height: 165px;
+  }
+
+  .building-gate .wall {
+    background: transparent;
+    border-color: transparent;
+  }
+
+  .building-notice,
+  .building-manage {
+    height: 145px;
+  }
+
+  .building-notice .horse-head,
+  .building-manage .horse-head {
+    display: none;
+  }
+
+  .building-notice .wall,
+  .building-manage .wall {
+    height: 90px;
+  }
+
+  .building-notice .roof,
+  .building-manage .roof {
+    bottom: 86px;
+  }
+
+  @keyframes alert-hop {
+    50% { translate: 0 -5px; }
+  }
+</style>

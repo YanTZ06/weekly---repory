@@ -1,0 +1,13 @@
+---
+interface Props {
+  name: string;
+  class?: string;
+  ariaHidden?: boolean;
+}
+
+const { name, class: className = "", ariaHidden = true } = Astro.props;
+---
+
+<div class:list={["map-layer", `layer-${name}`, className]} data-layer={name} aria-hidden={ariaHidden ? "true" : undefined}>
+  <slot />
+</div>

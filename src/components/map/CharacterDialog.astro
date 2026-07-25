@@ -1,0 +1,42 @@
+---
+interface Props {
+  id: string;
+  title: string;
+}
+
+const { id, title } = Astro.props;
+---
+
+<dialog class="character-dialog pixel-window" id={id} aria-labelledby={`${id}-title`}>
+  <button class="dialog-close" type="button" aria-label="关闭窗口" data-dialog-close>×</button>
+  <h2 id={`${id}-title`}>{title}</h2>
+  <slot />
+</dialog>
+
+<style>
+  .character-dialog {
+    width: min(92vw, 520px);
+    color: var(--ink);
+    background: var(--paper);
+  }
+
+  .character-dialog::backdrop {
+    background: rgba(20, 32, 42, 0.62);
+    backdrop-filter: blur(3px);
+  }
+
+  .dialog-close {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border: 3px solid var(--tile);
+    color: var(--ink);
+    background: var(--red);
+    font-size: 1.4rem;
+    cursor: pointer;
+  }
+</style>

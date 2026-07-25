@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    ".astro/types.d.ts",
+    "src/env.d.ts",
+    "scripts/**/*.ts",
+    "tests/**/*.ts",
+    "src/types/**/*.ts",
+    "src/utils/**/*.ts"
+  ],
+  "exclude": ["dist", "node_modules", "src/utils/content.ts"],
+  "compilerOptions": {
+    "types": ["node", "vitest/globals"],
+    "noEmit": true,
+    "allowImportingTsExtensions": true
+  }
+}

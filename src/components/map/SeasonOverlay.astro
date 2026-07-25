@@ -1,0 +1,33 @@
+<div class="season-overlay" aria-hidden="true">
+  <span class="season-item one">✦</span>
+  <span class="season-item two">✿</span>
+  <span class="season-item three">◆</span>
+</div>
+
+<style>
+  .season-overlay {
+    position: absolute;
+    z-index: 8;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .season-item {
+    position: absolute;
+    color: #ffc7d8;
+    animation: season-fall 9s linear infinite;
+  }
+
+  .one { left: 34%; top: 12%; }
+  .two { left: 62%; top: 22%; animation-delay: -3s; }
+  .three { left: 84%; top: 9%; animation-delay: -6s; }
+
+  :global(html[data-season="summer"]) .season-item { color: #fff17b; }
+  :global(html[data-season="autumn"]) .season-item { color: #e7a33c; }
+  :global(html[data-season="winter"]) .season-item { color: #f7fbff; }
+
+  @keyframes season-fall {
+    to { translate: -70px 540px; rotate: 180deg; }
+  }
+</style>

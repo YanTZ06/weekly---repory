@@ -1,0 +1,20 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import CalendarBoard from "@/components/calendar/CalendarBoard.astro";
+import { loadReportItems } from "@/utils/content";
+
+const items = await loadReportItems();
+---
+
+<BaseLayout title="周报日历" description="以原创记录球标记每日事项的 ISO 周日历">
+  <div class="content-page">
+    <header class="page-hero">
+      <div>
+        <p class="eyebrow">书院墙面 · 木制告示栏</p>
+        <h1>周报日历</h1>
+        <p class="lede">每周从周一开始。日期格中央显示当天最后一条事项选择的记录球。</p>
+      </div>
+    </header>
+    <CalendarBoard items={items} />
+  </div>
+</BaseLayout>

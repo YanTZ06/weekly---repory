@@ -1,0 +1,27 @@
+---
+import type { Tag } from "@/types/content";
+import { assetUrl, withBase } from "@/utils/paths";
+
+interface Props {
+  tag: Tag;
+  linked?: boolean;
+}
+
+const { tag, linked = true } = Astro.props;
+const TagName = linked ? "a" : "span";
+---
+
+<TagName
+  class="tag-badge"
+  href={linked ? withBase(`/tags/${tag.slug}/`) : undefined}
+  style={`--badge-color:${tag.color}`}
+>
+  <img class="pixel-art" src={assetUrl(tag.icon)} width="24" height="24" alt="" loading="lazy" />
+  <span>{tag.name}</span>
+</TagName>
+
+<style>
+  .tag-badge {
+    border-bottom-color: var(--badge-color);
+  }
+</style>

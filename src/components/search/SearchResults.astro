@@ -1,0 +1,33 @@
+<div class="search-results" data-search-results aria-live="polite">
+  <p class="search-hint">输入关键词后，将在本地索引中查找事项、项目、标签、日期和周数。</p>
+</div>
+
+<style>
+  .search-results {
+    display: grid;
+    gap: 0.8rem;
+    margin-top: 1rem;
+  }
+  .search-hint {
+    color: var(--muted);
+  }
+  .search-results :global(.search-result) {
+    padding: 1rem;
+    border: 3px solid var(--tile);
+    background: var(--white);
+    box-shadow: 4px 4px 0 var(--shadow);
+  }
+  .search-results :global(.search-result h2) {
+    margin: 0 0 0.35rem;
+    font-size: 1.05rem;
+  }
+  .search-results :global(.search-result p) {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .search-results :global(mark) {
+    color: var(--ink);
+    background: var(--yellow);
+  }
+</style>
