@@ -7,7 +7,7 @@
     "largeSprite": "/assets/creatures/mechanical/mechanical-01-large.png",
     "enabled": true,
     "source": "项目内程序化原创像素资源",
-    "author": "徽州灵兽周记项目",
+    "author": "YanTZ的周记项目",
     "license": "CC0-1.0"
   },
   {
@@ -18,7 +18,7 @@
     "largeSprite": "/assets/creatures/water/water-01-large.png",
     "enabled": true,
     "source": "项目内程序化原创像素资源",
-    "author": "徽州灵兽周记项目",
+    "author": "YanTZ的周记项目",
     "license": "CC0-1.0"
   },
   {
@@ -29,7 +29,7 @@
     "largeSprite": "/assets/creatures/nature/nature-01-large.png",
     "enabled": true,
     "source": "项目内程序化原创像素资源",
-    "author": "徽州灵兽周记项目",
+    "author": "YanTZ的周记项目",
     "license": "CC0-1.0"
   }
 ]
