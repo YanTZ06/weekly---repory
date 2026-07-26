@@ -31,5 +31,16 @@
     "source": "项目内程序化原创像素资源",
     "author": "YanTZ的周记项目",
     "license": "CC0-1.0"
+  },
+  {
+    "id": "fire-01",
+    "name": "焰尾狸",
+    "element": "fire",
+    "sprite": "/assets/creatures/fire/fire-01.png",
+    "largeSprite": "/assets/creatures/fire/fire-01-large.png",
+    "enabled": true,
+    "source": "OpenAI 图像生成工具与项目内透明化、像素化处理",
+    "author": "YanTZ的周记项目（OpenAI 生成辅助）",
+    "license": "CC0-1.0"
   }
 ]

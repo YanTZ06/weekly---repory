@@ -40,7 +40,8 @@ describe("站内管理表单", () => {
     expect(emojiField?.choices).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ value: "📝", mode: "unicode" }),
-        expect.objectContaining({ value: "soc", mode: "custom" })
+        expect.objectContaining({ value: "soc", mode: "custom" }),
+        expect.objectContaining({ value: "code-terminal", mode: "custom", image: expect.any(String) })
       ])
     );
     expect(calendarIconField?.defaultValue).toBe("huizhou-pattern");
@@ -53,7 +54,8 @@ describe("站内管理表单", () => {
     expect(creatureField?.choices).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ value: "mechanical-01", image: expect.any(String) }),
-        expect.objectContaining({ value: "water-01", image: expect.any(String) })
+        expect.objectContaining({ value: "water-01", image: expect.any(String) }),
+        expect.objectContaining({ value: "fire-01", image: expect.any(String) })
       ])
     );
   });

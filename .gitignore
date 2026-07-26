@@ -8,6 +8,7 @@ dist/
 .management-dispatch-event.json
 .wrangler/
 coverage/
+tmp/
 *.log
 .DS_Store
 Thumbs.db
