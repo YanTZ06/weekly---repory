@@ -1,5 +1,6 @@
 ---
 import { MANAGEMENT_FORMS } from "@/config/manage-forms";
+import { assetUrl } from "@/utils/paths";
 
 interface Props {
   apiUrl?: string;
@@ -89,43 +90,94 @@ const normalizedApiUrl = apiUrl.replace(/\/+$/, "");
           </header>
 
           <div class="form-fields">
-            {definition.fields.map((field) => (
-              <label class:list={["form-field", field.kind === "textarea" && "is-wide"]}>
-                <span>
-                  {field.label}
-                  {field.required && <em>必填</em>}
-                </span>
-                {field.kind === "select" ? (
-                  <select name={field.id} required={field.required}>
-                    {field.options?.map((option) => <option value={option}>{option}</option>)}
-                  </select>
-                ) : field.kind === "textarea" ? (
-                  <textarea
-                    name={field.id}
-                    required={field.required}
-                    maxlength={field.maxLength}
-                    placeholder={field.placeholder}
-                    rows={field.id.includes("content") ? 7 : 4}
-                  ></textarea>
-                ) : (
-                  <input
-                    name={field.id}
-                    type={field.kind === "date" ? "date" : "text"}
-                    required={field.required}
-                    maxlength={field.maxLength}
-                    placeholder={field.placeholder}
-                    pattern={field.validation === "safe-id"
-                      ? "[a-z0-9][a-z0-9-]{0,63}"
-                      : field.validation === "item-id"
-                        ? "\\d{8}-[a-f0-9]{6}"
-                        : field.validation === "hex-color"
-                          ? "#[0-9A-Fa-f]{6}"
-                          : undefined}
-                  />
-                )}
-                {field.description && <small>{field.description}</small>}
-              </label>
-            ))}
+            {definition.fields.map((field) => {
+              const inputId = `${definition.id}-${field.id}`;
+              return (
+                <div
+                  class:list={[
+                    "form-field",
+                    field.kind === "textarea" && "is-wide",
+                    field.choices?.length && "has-choices"
+                  ]}
+                >
+                  <label for={inputId}>
+                    {field.label}
+                    {field.required && <em>必填</em>}
+                  </label>
+                  {field.kind === "select" ? (
+                    <select id={inputId} name={field.id} required={field.required}>
+                      {field.options?.map((option) => <option value={option}>{option}</option>)}
+                    </select>
+                  ) : field.kind === "textarea" ? (
+                    <textarea
+                      id={inputId}
+                      name={field.id}
+                      required={field.required}
+                      maxlength={field.maxLength}
+                      placeholder={field.placeholder}
+                      rows={field.id.includes("content") ? 7 : 4}
+                    ></textarea>
+                  ) : (
+                    <input
+                      id={inputId}
+                      name={field.id}
+                      type={field.kind === "date" ? "date" : "text"}
+                      required={field.required}
+                      maxlength={field.maxLength}
+                      placeholder={field.placeholder}
+                      value={field.defaultValue}
+                      pattern={field.validation === "safe-id"
+                        ? "[a-z0-9][a-z0-9-]{0,63}"
+                        : field.validation === "item-id"
+                          ? "\\d{8}-[a-f0-9]{6}"
+                          : field.validation === "hex-color"
+                            ? "#[0-9A-Fa-f]{6}"
+                            : undefined}
+                    />
+                  )}
+                  {field.choices?.length && (
+                    <div
+                      class="choice-picker"
+                      role="group"
+                      aria-label={`${field.label}可选项`}
+                      data-choice-picker
+                      data-choice-field={field.id}
+                      data-choice-filter-field={field.choiceFilterField}
+                    >
+                      {field.choices.map((choice) => (
+                        <button
+                          class="choice-option"
+                          type="button"
+                          data-choice-option
+                          data-choice-value={choice.value}
+                          data-choice-mode={choice.mode}
+                          aria-pressed={choice.value === field.defaultValue ? "true" : "false"}
+                          title={`选择${choice.label}`}
+                        >
+                          {choice.image ? (
+                            <img
+                              class="choice-image pixel-art"
+                              src={assetUrl(choice.image)}
+                              width="36"
+                              height="36"
+                              alt=""
+                              loading="lazy"
+                            />
+                          ) : (
+                            <span class="choice-symbol" aria-hidden="true">{choice.symbol ?? choice.value}</span>
+                          )}
+                          <span class="choice-copy">
+                            <strong>{choice.label}</strong>
+                            <small>{choice.value}</small>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {field.description && <small class="field-description">{field.description}</small>}
+                </div>
+              );
+            })}
           </div>
 
           <label class="confirmation-row">
@@ -347,7 +399,8 @@ const normalizedApiUrl = apiUrl.replace(/\/+$/, "");
     font-weight: 800;
   }
 
-  .form-field.is-wide {
+  .form-field.is-wide,
+  .form-field.has-choices {
     grid-column: 1 / -1;
   }
 
@@ -384,11 +437,77 @@ const normalizedApiUrl = apiUrl.replace(/\/+$/, "");
     box-shadow: 3px 3px 0 var(--focus);
   }
 
-  .form-field small {
+  .field-description {
     color: var(--muted);
     font-size: 0.78rem;
     font-weight: 500;
     line-height: 1.5;
+  }
+
+  .choice-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 0.55rem;
+    margin-top: 0.2rem;
+    padding: 0.7rem;
+    border: 2px dashed color-mix(in srgb, var(--tile) 38%, transparent);
+    background: color-mix(in srgb, var(--wall) 72%, var(--paper));
+  }
+
+  .choice-option {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 54px;
+    padding: 0.45rem 0.55rem;
+    border: 2px solid color-mix(in srgb, var(--tile) 58%, transparent);
+    color: var(--ink);
+    background: var(--paper);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .choice-option:hover,
+  .choice-option:focus-visible {
+    border-color: var(--focus);
+    outline: 0;
+    box-shadow: 2px 2px 0 var(--focus);
+  }
+
+  .choice-option[aria-pressed="true"] {
+    border-color: var(--tile);
+    background: color-mix(in srgb, var(--yellow) 34%, var(--paper));
+    box-shadow: 3px 3px 0 var(--tile);
+  }
+
+  .choice-image,
+  .choice-symbol {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    object-fit: contain;
+  }
+
+  .choice-symbol {
+    font-size: 1.45rem;
+  }
+
+  .choice-copy,
+  .choice-copy strong,
+  .choice-copy small {
+    display: block;
+    min-width: 0;
+  }
+
+  .choice-copy small {
+    overflow: hidden;
+    margin-top: 0.12rem;
+    color: var(--muted);
+    font: 500 0.68rem/1.3 ui-monospace, "Cascadia Code", monospace;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .confirmation-row {
@@ -544,6 +663,60 @@ const normalizedApiUrl = apiUrl.replace(/\/+$/, "");
       if (dateInput && !dateInput.value && form.dataset.managementForm === "add-report-item") {
         dateInput.value = localToday();
       }
+
+      const choicePickers = form.querySelectorAll<HTMLElement>("[data-choice-picker]");
+
+      function syncChoicePicker(picker: HTMLElement, clearMismatchedValue = false): void {
+        const fieldName = picker.dataset.choiceField;
+        if (!fieldName) return;
+        const input = form.elements.namedItem(fieldName);
+        if (!(input instanceof HTMLInputElement)) return;
+
+        const filterFieldName = picker.dataset.choiceFilterField;
+        const filterField = filterFieldName ? form.elements.namedItem(filterFieldName) : null;
+        const filterValue = filterField instanceof HTMLSelectElement ? filterField.value : "";
+        const options = picker.querySelectorAll<HTMLButtonElement>("[data-choice-option]");
+        let selectedVisible = false;
+
+        options.forEach((option) => {
+          const matchesFilter = !option.dataset.choiceMode || option.dataset.choiceMode === filterValue;
+          option.hidden = !matchesFilter;
+          const selected = matchesFilter && option.dataset.choiceValue === input.value;
+          option.setAttribute("aria-pressed", selected ? "true" : "false");
+          if (selected) selectedVisible = true;
+        });
+
+        if (clearMismatchedValue && input.value && !selectedVisible && filterFieldName) {
+          input.value = "";
+          options.forEach((option) => option.setAttribute("aria-pressed", "false"));
+        }
+      }
+
+      choicePickers.forEach((picker) => {
+        const fieldName = picker.dataset.choiceField;
+        if (!fieldName) return;
+        const input = form.elements.namedItem(fieldName);
+        if (!(input instanceof HTMLInputElement)) return;
+        const filterFieldName = picker.dataset.choiceFilterField;
+        const filterField = filterFieldName ? form.elements.namedItem(filterFieldName) : null;
+
+        picker.querySelectorAll<HTMLButtonElement>("[data-choice-option]").forEach((option) => {
+          option.addEventListener("click", () => {
+            input.value = option.dataset.choiceValue ?? "";
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            input.focus();
+          });
+        });
+        input.addEventListener("input", () => syncChoicePicker(picker));
+        if (filterField instanceof HTMLSelectElement) {
+          filterField.addEventListener("change", () => syncChoicePicker(picker, true));
+        }
+        syncChoicePicker(picker);
+      });
+
+      form.addEventListener("reset", () => {
+        queueMicrotask(() => choicePickers.forEach((picker) => syncChoicePicker(picker)));
+      });
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();

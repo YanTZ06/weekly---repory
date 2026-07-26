@@ -1,5 +1,17 @@
+import calendarIcons from "../data/calendar-icons.json";
+import creatures from "../data/creatures.json";
+import emojis from "../data/emojis.json";
+
 export type ManagementFieldKind = "text" | "date" | "textarea" | "select";
 export type ManagementValidation = "safe-id" | "item-id" | "hex-color" | "date";
+
+export interface ManagementFieldChoice {
+  value: string;
+  label: string;
+  image?: string;
+  symbol?: string;
+  mode?: string;
+}
 
 export interface ManagementField {
   id: string;
@@ -7,6 +19,9 @@ export interface ManagementField {
   kind: ManagementFieldKind;
   required?: boolean;
   options?: readonly string[];
+  choices?: readonly ManagementFieldChoice[];
+  choiceFilterField?: string;
+  defaultValue?: string;
   placeholder?: string;
   description?: string;
   maxLength?: number;
@@ -32,6 +47,49 @@ export interface ManagementRequestPayload {
   body: string;
   labels: string[];
 }
+
+const UNICODE_EMOJI_CHOICES: readonly ManagementFieldChoice[] = [
+  { value: "📝", label: "记录", symbol: "📝", mode: "unicode" },
+  { value: "💻", label: "编程", symbol: "💻", mode: "unicode" },
+  { value: "📚", label: "学习", symbol: "📚", mode: "unicode" },
+  { value: "🔬", label: "科研", symbol: "🔬", mode: "unicode" },
+  { value: "🧠", label: "思考", symbol: "🧠", mode: "unicode" },
+  { value: "✨", label: "成果", symbol: "✨", mode: "unicode" },
+  { value: "🛠️", label: "实践", symbol: "🛠️", mode: "unicode" },
+  { value: "🌱", label: "成长", symbol: "🌱", mode: "unicode" },
+  { value: "🎯", label: "目标", symbol: "🎯", mode: "unicode" },
+  { value: "🤝", label: "协作", symbol: "🤝", mode: "unicode" }
+];
+
+const CUSTOM_EMOJI_CHOICES: readonly ManagementFieldChoice[] = emojis
+  .filter((emoji) => emoji.enabled)
+  .map((emoji) => ({
+    value: emoji.id,
+    label: emoji.name,
+    image: emoji.path,
+    mode: "custom"
+  }));
+
+const REPORT_EMOJI_CHOICES: readonly ManagementFieldChoice[] = [
+  ...UNICODE_EMOJI_CHOICES,
+  ...CUSTOM_EMOJI_CHOICES
+];
+
+const CALENDAR_ICON_CHOICES: readonly ManagementFieldChoice[] = calendarIcons
+  .filter((icon) => icon.enabled)
+  .map((icon) => ({
+    value: icon.id,
+    label: icon.name,
+    image: icon.path
+  }));
+
+const CREATURE_CHOICES: readonly ManagementFieldChoice[] = creatures
+  .filter((creature) => creature.enabled)
+  .map((creature) => ({
+    value: creature.id,
+    label: creature.name,
+    image: creature.sprite
+  }));
 
 export const MANAGEMENT_FORMS: readonly ManagementFormDefinition[] = [
   {
@@ -93,16 +151,23 @@ export const MANAGEMENT_FORMS: readonly ManagementFormDefinition[] = [
         label: "Unicode 表情或自定义表情 ID",
         kind: "text",
         required: true,
+        defaultValue: "📝",
         placeholder: "📝",
-        maxLength: 64
+        maxLength: 64,
+        choices: REPORT_EMOJI_CHOICES,
+        choiceFilterField: "emoji-type",
+        description: "选择上方表情类型后，可直接点选；也可以继续手动输入。"
       },
       {
         id: "calendar-icon",
         label: "日历记录球",
         kind: "text",
         required: true,
+        defaultValue: "huizhou-pattern",
         placeholder: "huizhou-pattern",
-        validation: "safe-id"
+        validation: "safe-id",
+        choices: CALENDAR_ICON_CHOICES,
+        description: "直接点选记录球即可自动填写 ID。"
       },
       {
         id: "images",
@@ -147,8 +212,22 @@ export const MANAGEMENT_FORMS: readonly ManagementFormDefinition[] = [
       },
       { id: "projects", label: "新项目", kind: "textarea", maxLength: 1000 },
       { id: "tags", label: "新标签", kind: "textarea", maxLength: 1000 },
-      { id: "emoji", label: "新主表情", kind: "text", maxLength: 64 },
-      { id: "calendar-icon", label: "新记录球", kind: "text", validation: "safe-id" },
+      {
+        id: "emoji",
+        label: "新主表情（Unicode）",
+        kind: "text",
+        maxLength: 64,
+        choices: UNICODE_EMOJI_CHOICES,
+        description: "点选常用表情，留空保持原值。"
+      },
+      {
+        id: "calendar-icon",
+        label: "新记录球",
+        kind: "text",
+        validation: "safe-id",
+        choices: CALENDAR_ICON_CHOICES,
+        description: "点选现有记录球，留空保持原值。"
+      },
       {
         id: "replace-images",
         label: "是否替换图片",
@@ -259,7 +338,9 @@ export const MANAGEMENT_FORMS: readonly ManagementFormDefinition[] = [
         kind: "text",
         required: true,
         placeholder: "water-01",
-        validation: "safe-id"
+        validation: "safe-id",
+        choices: CREATURE_CHOICES,
+        description: "可直接点选现有灵兽。"
       },
       {
         id: "map-position",
@@ -300,7 +381,9 @@ export const MANAGEMENT_FORMS: readonly ManagementFormDefinition[] = [
         kind: "text",
         required: true,
         placeholder: "cloud-pattern",
-        validation: "safe-id"
+        validation: "safe-id",
+        choices: CALENDAR_ICON_CHOICES,
+        description: "替换、启用或停用时可点选现有记录球；新增时可输入新 ID。"
       },
       { id: "name", label: "名称", kind: "text", required: true, maxLength: 64 },
       {
@@ -335,7 +418,9 @@ export const MANAGEMENT_FORMS: readonly ManagementFormDefinition[] = [
         kind: "text",
         required: true,
         placeholder: "soc",
-        validation: "safe-id"
+        validation: "safe-id",
+        choices: CUSTOM_EMOJI_CHOICES,
+        description: "替换、启用或停用时可点选现有表情；新增时可输入新 ID。"
       },
       { id: "name", label: "名称", kind: "text", required: true, maxLength: 64 },
       {

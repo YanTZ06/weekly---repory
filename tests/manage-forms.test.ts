@@ -29,6 +29,35 @@ describe("站内管理表单", () => {
     expect(request.body).toContain("### 新图标图片\n\n_未填写_");
   });
 
+  it("为表情、记录球和灵兽字段提供可见选项", () => {
+    const addReport = MANAGEMENT_FORMS.find((form) => form.id === "add-report-item");
+    const emojiField = addReport?.fields.find((field) => field.id === "emoji");
+    const calendarIconField = addReport?.fields.find((field) => field.id === "calendar-icon");
+    const creatureForm = MANAGEMENT_FORMS.find((form) => form.id === "manage-project-creature");
+    const creatureField = creatureForm?.fields.find((field) => field.id === "creature-id");
+
+    expect(emojiField?.defaultValue).toBe("📝");
+    expect(emojiField?.choices).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ value: "📝", mode: "unicode" }),
+        expect.objectContaining({ value: "soc", mode: "custom" })
+      ])
+    );
+    expect(calendarIconField?.defaultValue).toBe("huizhou-pattern");
+    expect(calendarIconField?.choices).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ value: "cloud-pattern", image: expect.any(String) }),
+        expect.objectContaining({ value: "lotus", image: expect.any(String) })
+      ])
+    );
+    expect(creatureField?.choices).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ value: "mechanical-01", image: expect.any(String) }),
+        expect.objectContaining({ value: "water-01", image: expect.any(String) })
+      ])
+    );
+  });
+
   it("拒绝未知操作、非法标识和字段标题注入", () => {
     expect(() => buildManagementRequest("unknown", {})).toThrow(/不支持/);
     expect(() =>
