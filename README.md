@@ -137,17 +137,12 @@ Pages 工作流只声明读取代码、写入 Pages 和 OIDC 所需权限。
 
 管理页不会读取或保存 GitHub 密码。Worker 完成 OAuth 回调后，只给仓库所有者签发一个两小时有效的短时管理令牌；GitHub OAuth 密钥和仓库派发令牌始终保存在 Cloudflare Secrets 中。
 
-### 1. 首次部署 Worker
+### 1. 确认 Worker 地址
 
-```powershell
-pnpm exec wrangler login
-pnpm run worker:deploy
-```
-
-记录命令返回的 Worker 地址，例如：
+当前生产 Worker 已创建，地址为：
 
 ```text
-https://yantz-weekly-manage-api.<你的 workers.dev 子域>.workers.dev
+https://yantz-weekly-manage-api.yantz06-weekly.workers.dev
 ```
 
 ### 2. 创建 GitHub OAuth App
@@ -157,7 +152,7 @@ https://yantz-weekly-manage-api.<你的 workers.dev 子域>.workers.dev
 ```text
 Application name: YanTZ Weekly Management
 Homepage URL: https://yantz06.github.io/weekly---repory/
-Authorization callback URL: https://你的-worker地址/auth/callback
+Authorization callback URL: https://yantz-weekly-manage-api.yantz06-weekly.workers.dev/auth/callback
 ```
 
 创建后保存 `Client ID`，并生成一个 `Client Secret`。
@@ -198,7 +193,7 @@ pnpm run worker:deploy
 在仓库 `Settings → Secrets and variables → Actions → Variables` 中添加：
 
 ```text
-PUBLIC_MANAGE_API_URL=https://你的-worker地址
+PUBLIC_MANAGE_API_URL=https://yantz-weekly-manage-api.yantz06-weekly.workers.dev
 ```
 
 然后手动运行一次 `Deploy GitHub Pages`，或再推送一次提交。管理页第一次使用时需要点击“使用 GitHub 验证身份”；验证成功后的两小时内，同一浏览器会自动恢复短时授权。账号不是 `YanTZ06`、授权过期或没有授权时，页面只显示“你没有权限更改”。
