@@ -47,5 +47,47 @@
     "path": "/assets/emojis/coffee-break.webp",
     "enabled": true,
     "createdAt": "2026-07-26T14:30:00+08:00"
+  },
+  {
+    "id": "writing-note",
+    "name": "写作记录",
+    "path": "/assets/emojis/writing-note.webp",
+    "enabled": true,
+    "createdAt": "2026-07-26T14:55:00+08:00"
+  },
+  {
+    "id": "weekly-plan",
+    "name": "周计划",
+    "path": "/assets/emojis/weekly-plan.webp",
+    "enabled": true,
+    "createdAt": "2026-07-26T14:55:00+08:00"
+  },
+  {
+    "id": "bug-fix",
+    "name": "排错修复",
+    "path": "/assets/emojis/bug-fix.webp",
+    "enabled": true,
+    "createdAt": "2026-07-26T14:55:00+08:00"
+  },
+  {
+    "id": "data-chart",
+    "name": "数据分析",
+    "path": "/assets/emojis/data-chart.webp",
+    "enabled": true,
+    "createdAt": "2026-07-26T14:55:00+08:00"
+  },
+  {
+    "id": "rocket-launch",
+    "name": "发布上线",
+    "path": "/assets/emojis/rocket-launch.webp",
+    "enabled": true,
+    "createdAt": "2026-07-26T14:55:00+08:00"
+  },
+  {
+    "id": "teamwork",
+    "name": "团队协作",
+    "path": "/assets/emojis/teamwork.webp",
+    "enabled": true,
+    "createdAt": "2026-07-26T14:55:00+08:00"
   }
 ]

@@ -42,5 +42,27 @@
     "source": "OpenAI 图像生成工具与项目内透明化、像素化处理",
     "author": "YanTZ的周记项目（OpenAI 生成辅助）",
     "license": "CC0-1.0"
+  },
+  {
+    "id": "electric-01",
+    "name": "雷角团",
+    "element": "electric",
+    "sprite": "/assets/creatures/electric/electric-01.png",
+    "largeSprite": "/assets/creatures/electric/electric-01-large.png",
+    "enabled": true,
+    "source": "OpenAI 图像生成工具与项目内透明化、像素化处理",
+    "author": "YanTZ的周记项目（OpenAI 生成辅助）",
+    "license": "CC0-1.0"
+  },
+  {
+    "id": "psychic-01",
+    "name": "星梦貘",
+    "element": "psychic",
+    "sprite": "/assets/creatures/psychic/psychic-01.png",
+    "largeSprite": "/assets/creatures/psychic/psychic-01-large.png",
+    "enabled": true,
+    "source": "OpenAI 图像生成工具与项目内透明化、像素化处理",
+    "author": "YanTZ的周记项目（OpenAI 生成辅助）",
+    "license": "CC0-1.0"
   }
 ]

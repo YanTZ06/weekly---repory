@@ -24,6 +24,10 @@ const EXPECTED_ASSETS: ExpectedAsset[] = [
   { relativePath: "creatures/nature/nature-01-large.png", width: 128, height: 128, alpha: true },
   { relativePath: "creatures/fire/fire-01.png", width: 64, height: 64, alpha: true },
   { relativePath: "creatures/fire/fire-01-large.png", width: 128, height: 128, alpha: true },
+  { relativePath: "creatures/electric/electric-01.png", width: 64, height: 64, alpha: true },
+  { relativePath: "creatures/electric/electric-01-large.png", width: 128, height: 128, alpha: true },
+  { relativePath: "creatures/psychic/psychic-01.png", width: 64, height: 64, alpha: true },
+  { relativePath: "creatures/psychic/psychic-01-large.png", width: 128, height: 128, alpha: true },
   { relativePath: "emojis/soc.webp", width: 24, height: 24, alpha: true },
   { relativePath: "emojis/code-terminal.webp", width: 24, height: 24, alpha: true },
   { relativePath: "emojis/reading-book.webp", width: 24, height: 24, alpha: true },
@@ -31,6 +35,12 @@ const EXPECTED_ASSETS: ExpectedAsset[] = [
   { relativePath: "emojis/achievement-star.webp", width: 24, height: 24, alpha: true },
   { relativePath: "emojis/research-flask.webp", width: 24, height: 24, alpha: true },
   { relativePath: "emojis/coffee-break.webp", width: 24, height: 24, alpha: true },
+  { relativePath: "emojis/writing-note.webp", width: 24, height: 24, alpha: true },
+  { relativePath: "emojis/weekly-plan.webp", width: 24, height: 24, alpha: true },
+  { relativePath: "emojis/bug-fix.webp", width: 24, height: 24, alpha: true },
+  { relativePath: "emojis/data-chart.webp", width: 24, height: 24, alpha: true },
+  { relativePath: "emojis/rocket-launch.webp", width: 24, height: 24, alpha: true },
+  { relativePath: "emojis/teamwork.webp", width: 24, height: 24, alpha: true },
   { relativePath: "buildings/academy-tile.png", width: 192, height: 128 },
   { relativePath: "map/village-preview.png", width: 384, height: 256 },
   { relativePath: "og/huizhou-weekly-preview.png", width: 1280, height: 720 }
@@ -117,7 +127,7 @@ export async function validateAssetDimensions(root = process.cwd()): Promise<voi
     )
   );
 
-  for (const kind of ["mechanical", "water", "nature", "fire"]) {
+  for (const kind of ["mechanical", "water", "nature", "fire", "electric", "psychic"]) {
     await assertExactNearestScale(
       path.join(assetRoot, "creatures", kind, `${kind}-01.png`),
       path.join(assetRoot, "creatures", kind, `${kind}-01-large.png`),

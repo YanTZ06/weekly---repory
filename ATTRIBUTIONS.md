@@ -16,6 +16,14 @@
 | achievement-star | OpenAI 图像生成工具与项目内透明化、像素化处理 | YanTZ的周记项目（OpenAI 生成辅助） | CC0-1.0 | 是 | 周报事项与管理页 |
 | research-flask | OpenAI 图像生成工具与项目内透明化、像素化处理 | YanTZ的周记项目（OpenAI 生成辅助） | CC0-1.0 | 是 | 周报事项与管理页 |
 | coffee-break | OpenAI 图像生成工具与项目内透明化、像素化处理 | YanTZ的周记项目（OpenAI 生成辅助） | CC0-1.0 | 是 | 周报事项与管理页 |
+| electric-01 | OpenAI 图像生成工具与项目内透明化、像素化处理 | YanTZ的周记项目（OpenAI 生成辅助） | CC0-1.0 | 是 | 管理页、项目图鉴、项目徽章 |
+| psychic-01 | OpenAI 图像生成工具与项目内透明化、像素化处理 | YanTZ的周记项目（OpenAI 生成辅助） | CC0-1.0 | 是 | 管理页、项目图鉴、项目徽章 |
+| writing-note | OpenAI 图像生成工具与项目内透明化、像素化处理 | YanTZ的周记项目（OpenAI 生成辅助） | CC0-1.0 | 是 | 周报事项与管理页 |
+| weekly-plan | OpenAI 图像生成工具与项目内透明化、像素化处理 | YanTZ的周记项目（OpenAI 生成辅助） | CC0-1.0 | 是 | 周报事项与管理页 |
+| bug-fix | OpenAI 图像生成工具与项目内透明化、像素化处理 | YanTZ的周记项目（OpenAI 生成辅助） | CC0-1.0 | 是 | 周报事项与管理页 |
+| data-chart | OpenAI 图像生成工具与项目内透明化、像素化处理 | YanTZ的周记项目（OpenAI 生成辅助） | CC0-1.0 | 是 | 周报事项与管理页 |
+| rocket-launch | OpenAI 图像生成工具与项目内透明化、像素化处理 | YanTZ的周记项目（OpenAI 生成辅助） | CC0-1.0 | 是 | 周报事项与管理页 |
+| teamwork | OpenAI 图像生成工具与项目内透明化、像素化处理 | YanTZ的周记项目（OpenAI 生成辅助） | CC0-1.0 | 是 | 周报事项与管理页 |
 | red-flame | 项目内程序化生成 | YanTZ的周记项目 | CC0-1.0 | 否 | 日历与事项 |
 | blue-stream | 项目内程序化生成 | YanTZ的周记项目 | CC0-1.0 | 否 | 日历与事项 |
 | gold-harvest | 项目内程序化生成 | YanTZ的周记项目 | CC0-1.0 | 否 | 日历与事项 |
