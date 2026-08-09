@@ -247,6 +247,30 @@ PUBLIC_GISCUS_CATEGORY_ID
 
 失败时不会提交，输入内容也不会写入公开日志。管理工作流使用 `workflow_dispatch` 主动触发 Pages 部署，因为由 `GITHUB_TOKEN` 推送的提交本身不会再次触发普通 `push` 工作流。
 
+### 提交失败排查
+
+管理页提示“提交失败，请稍后重试”时，说明 Worker 已通过身份校验，但在向 GitHub 派发时被拒绝。更新后的 Worker 会把具体原因直接显示在表单下方（例如 `GitHub 派发失败（HTTP 401）：Bad credentials`）。常见原因与处理：
+
+- **HTTP 401（Bad credentials / 已过期）**：派发 token 失效或已到期。Fine-grained token 有有效期，到期后需要重新创建。
+- **HTTP 403（权限不足）**：token 未勾选 `Contents → Read and write`，或授权仓库不对。
+- **HTTP 404（Resource not found）**：token 的仓库访问范围不包含 `YanTZ06/weekly---repory`（仓库改名后旧 token 也会失效）。
+
+换新 token 前，先用下面的命令在本地验证，确认状态码为 `204` 再写入 Cloudflare（不会触发任何内容修改）：
+
+```powershell
+$env:GITHUB_DISPATCH_TOKEN = "粘贴新的 token"
+pnpm run verify:dispatch
+```
+
+验证通过后重新写入密钥并部署：
+
+```powershell
+pnpm exec wrangler secret put GITHUB_DISPATCH_TOKEN --config worker/wrangler.jsonc
+pnpm run worker:deploy
+```
+
+如果表单下方显示的是“你没有权限更改”，则是管理授权已过期（两小时有效），回到管理页重新点击“使用 GitHub 验证身份”即可。
+
 ### 新增事项
 
 选择“新增周报事项”，填写日期、分类、纯文本内容、项目、标签、表情、记录球和最多 9 张图片。文件 ID 与文件名由脚本生成，Issue 内容不能控制路径。

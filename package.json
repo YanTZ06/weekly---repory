@@ -26,7 +26,8 @@
     "worker:check": "pnpm run worker:types && tsc --noEmit -p worker/tsconfig.json",
     "worker:dev": "wrangler dev --config worker/wrangler.jsonc",
     "worker:dry-run": "wrangler deploy --dry-run --config worker/wrangler.jsonc",
-    "worker:deploy": "wrangler deploy --config worker/wrangler.jsonc"
+    "worker:deploy": "wrangler deploy --config worker/wrangler.jsonc",
+    "verify:dispatch": "tsx scripts/verify-dispatch-token.ts"
   },
   "dependencies": {
     "astro": "7.1.3",

@@ -131,6 +131,16 @@ async function readGitHubUser(accessToken: string): Promise<GitHubUser> {
   return { login: user.login };
 }
 
+async function readGitHubErrorMessage(response: Response): Promise<string> {
+  try {
+    const text = await response.text();
+    const data = JSON.parse(text) as { message?: unknown };
+    return typeof data.message === "string" ? data.message.slice(0, 200) : "";
+  } catch {
+    return "";
+  }
+}
+
 async function finishLogin(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
@@ -243,7 +253,24 @@ async function dispatchManagementRequest(request: Request, env: Env): Promise<Re
     })
   });
   if (!response.ok) {
-    return json(request, env, { error: "github_dispatch_failed" }, 502);
+    const githubMessage = await readGitHubErrorMessage(response);
+    console.error("GitHub dispatch failed", {
+      status: response.status,
+      requestId,
+      githubMessage
+    });
+    return json(
+      request,
+      env,
+      {
+        error: "github_dispatch_failed",
+        githubStatus: response.status,
+        message: githubMessage
+          ? `GitHub 派发失败（HTTP ${response.status}）：${githubMessage}`
+          : `GitHub 派发失败（HTTP ${response.status}）`
+      },
+      502
+    );
   }
 
   return json(request, env, {
